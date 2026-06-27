@@ -115,7 +115,15 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>Admin Koperasi</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={resetDemo} className="gap-2 text-slate-600">
+              <DropdownMenuItem
+                onClick={() => {
+                  resetDemo()
+                  setTimeout(() => {
+                    window.location.reload()
+                  }, 50)
+                }}
+                className="gap-2 text-slate-600 cursor-pointer"
+              >
                 <RotateCcw className="size-4" /> Reset Demo
               </DropdownMenuItem>
             </DropdownMenuContent>

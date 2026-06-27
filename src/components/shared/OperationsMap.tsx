@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { ChevronDown } from "lucide-react"
 import {
   GeoJSON,
   LayersControl,
@@ -191,15 +192,18 @@ export function MapFilterDropdown() {
   const setFilter = useSikoraStore((s) => s.setMapFilter)
 
   return (
-    <select
-      value={filter}
-      onChange={(e) => setFilter(e.target.value as any)}
-      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-colors"
-    >
-      <option value="semua">Kondisi Persediaan: Semua</option>
-      <option value="kritis">Stok Kritis (Segera Restock)</option>
-      <option value="menipis">Stok Menipis (Perlu Restock)</option>
-      <option value="aman">Stok Aman & Stabil</option>
-    </select>
+    <div className="relative inline-block">
+      <select
+        value={filter}
+        onChange={(e) => setFilter(e.target.value as any)}
+        className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+      >
+        <option value="semua">Kondisi Persediaan: Semua</option>
+        <option value="kritis">Stok Kritis (Segera Restock)</option>
+        <option value="menipis">Stok Menipis (Perlu Restock)</option>
+        <option value="aman">Stok Aman & Stabil</option>
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+    </div>
   )
 }
