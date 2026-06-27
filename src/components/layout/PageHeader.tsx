@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, ChevronDown, MapPin, Menu, RotateCcw, Wifi, WifiOff } from "lucide-react"
+import { Bell, CalendarDays, ChevronDown, MapPin, Menu, RotateCcw } from "lucide-react"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { PROVINCES } from "@/data/provinces"
 import { waktuLalu } from "@/lib/format"
@@ -31,31 +31,26 @@ const NOTIF_DOT: Record<string, string> = {
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const notifications = useSikoraStore((s) => s.notifications)
-  const isOnline = useSikoraStore((s) => s.isOnline)
-  const toggleOnline = useSikoraStore((s) => s.toggleOnline)
   const resetDemo = useSikoraStore((s) => s.resetDemo)
   const selectedProvinceId = useSikoraStore((s) => s.selectedProvinceId)
   const setProvince = useSikoraStore((s) => s.setProvince)
   const toggleSidebar = useSikoraStore((s) => s.toggleSidebar)
 
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4">
-      <div className="flex items-start gap-3">
+    <div className="flex flex-col gap-5 pb-2">
+      {/* Row 1: Top Navigation Bar */}
+      <div className="flex items-center justify-between">
+        {/* Hamburger menu button */}
         <button
           onClick={toggleSidebar}
-          className="mt-0.5 flex size-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100"
+          className="flex size-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100"
           title="Tampilkan / sembunyikan menu"
         >
           <Menu className="size-5" />
         </button>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
-        </div>
-      </div>
 
-      <div className="flex flex-col items-end gap-2.5">
-        <div className="flex items-center gap-2.5">
+        {/* Top-Right widgets */}
+        <div className="flex items-center gap-3">
           {/* Region */}
           <Select
             value={selectedProvinceId ?? "all"}
@@ -74,19 +69,6 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
               ))}
             </SelectContent>
           </Select>
-
-          {/* Online toggle (demo control for offline-first POS) */}
-          <button
-            onClick={toggleOnline}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium shadow-sm transition-colors",
-              isOnline ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600",
-            )}
-            title="Toggle status koneksi (demo offline-first)"
-          >
-            {isOnline ? <Wifi className="size-4" /> : <WifiOff className="size-4" />}
-            {isOnline ? "Online" : "Offline"}
-          </button>
 
           {/* Notifications */}
           <DropdownMenu>
@@ -139,10 +121,18 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+      </div>
 
-        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm shadow-sm">
+      {/* Row 2: Page Title and Date Range */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{title}</h1>
+          {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+        </div>
+
+        <div className="flex items-center gap-2 self-start rounded-xl border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-500 shadow-sm sm:self-auto">
           <span className="text-slate-400">Periode:</span>
-          <span className="font-medium text-slate-700">24 Mei - 24 Juni 2026</span>
+          <span className="font-bold text-slate-700">24 Mei - 24 Juni 2026</span>
           <CalendarDays className="size-4 text-slate-400" />
         </div>
       </div>
