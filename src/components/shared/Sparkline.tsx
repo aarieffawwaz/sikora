@@ -5,8 +5,8 @@ interface SparklineProps {
 }
 
 export function Sparkline({ data, color, className }: SparklineProps) {
-  const w = 72
-  const h = 30
+  const w = 64
+  const h = 26
   const paddingRight = 4
   const min = Math.min(...data)
   const max = Math.max(...data)
@@ -26,7 +26,7 @@ export function Sparkline({ data, color, className }: SparklineProps) {
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className={className} fill="none">
       <polyline points={pts} stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lastX} cy={lastY} r={2.5} fill={color} />
+      <circle cx={lastX} cy={lastY} r={2} fill={color} />
     </svg>
   )
 }

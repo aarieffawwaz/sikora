@@ -73,19 +73,19 @@ export function KpiCards() {
               {c.sub && <p className="text-xs font-medium text-slate-500 mt-0.5">{c.sub}</p>}
             </div>
           </div>
-          <div className="mt-3 flex items-end justify-between">
+          <div className="mt-3 flex items-end justify-between gap-1">
             {c.trend ? (
-              <span className="text-xs text-slate-400 flex items-center">
-                <span className="font-semibold text-emerald-600 mr-1">↑ {c.trend}</span>
+              <span className="text-[10.5px] text-slate-400 leading-normal">
+                <span className="font-semibold text-emerald-600 mr-1 whitespace-nowrap">↑ {c.trend}</span>
                 {c.delta}
               </span>
             ) : c.isPill ? (
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-0.5 border border-slate-100 text-[10px] font-medium text-slate-500">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-0.5 border border-slate-100 text-[10px] font-medium text-slate-500 whitespace-nowrap">
                 <Sparkles className="size-3 text-blue-500" />
                 {c.delta}
               </span>
             ) : (
-              <span className="text-xs text-slate-400">
+              <span className="text-[10.5px] text-slate-400">
                 {c.delta}
               </span>
             )}

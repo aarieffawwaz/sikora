@@ -70,26 +70,26 @@ export function Dashboard() {
 
       {/* Status bar */}
       <Reveal delay={0.05}>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-emerald-100/50 bg-emerald-50/20 px-5 py-3 text-sm shadow-sm">
-          <span className="flex items-center gap-2 font-semibold text-emerald-700">
-            <svg className="size-5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 rounded-2xl border border-emerald-100/50 bg-emerald-50/20 px-4 py-2.5 text-xs lg:text-[12.5px] shadow-sm">
+          <span className="flex items-center gap-1.5 font-semibold text-emerald-700 whitespace-nowrap">
+            <svg className="size-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               <path d="M9 11l2 2 4-4" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Semua sistem berjalan normal
           </span>
-          <span className="text-slate-300 hidden md:inline">•</span>
-          <span className="text-slate-600">Sinkronisasi Simkopdes aktif</span>
-          <span className="text-slate-300">•</span>
-          <span className="text-slate-600">
+          <span className="text-slate-300 hidden sm:inline select-none">•</span>
+          <span className="text-slate-600 whitespace-nowrap">Sinkronisasi Simkopdes aktif</span>
+          <span className="text-slate-300 hidden md:inline select-none">•</span>
+          <span className="text-slate-600 whitespace-nowrap">
             AI memperbarui <span className="font-bold text-slate-800">23</span> rekomendasi stok
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-slate-600">
+          <span className="text-slate-300 hidden lg:inline select-none">•</span>
+          <span className="text-slate-600 whitespace-nowrap">
             <span className="font-bold text-slate-800">4</span> transaksi offline berhasil disinkronkan
           </span>
-          <Link to="/monitoring" className="ml-auto flex items-center gap-1 font-bold text-primary">
-            Lihat Detail <ChevronRight className="size-4 stroke-[2.5]" />
+          <Link to="/monitoring" className="ml-auto flex items-center gap-0.5 font-bold text-primary whitespace-nowrap">
+            Lihat Detail <ChevronRight className="size-3.5 stroke-[2.5]" />
           </Link>
         </div>
       </Reveal>
