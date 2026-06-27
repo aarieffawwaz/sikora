@@ -162,17 +162,17 @@ export function Dashboard() {
             </div>
           </SectionCard>
           <SectionCard title="Akses Cepat">
-            <div className="grid grid-cols-6 gap-2 pt-2">
+            <div className="grid grid-cols-6 gap-1 pt-2">
               {QUICK.map((q) => (
                 <Link
                   key={q.label}
                   to={q.to}
-                  className="flex flex-col items-center text-center group"
+                  className="flex flex-col items-center text-center group min-w-0"
                 >
-                  <span className={`flex size-11 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-105 group-hover:shadow-md ${q.tone}`}>
-                    <q.icon className="size-5" />
+                  <span className={`flex size-10 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-105 group-hover:shadow-md ${q.tone}`}>
+                    <q.icon className="size-4.5" />
                   </span>
-                  <span className="mt-2 text-[10.5px] font-bold text-slate-500 group-hover:text-slate-900 transition-colors whitespace-nowrap">
+                  <span className="mt-1.5 text-[9.5px] font-bold text-slate-500 leading-tight group-hover:text-slate-900 transition-colors text-center break-words w-full px-0.5">
                     {q.label}
                   </span>
                 </Link>
