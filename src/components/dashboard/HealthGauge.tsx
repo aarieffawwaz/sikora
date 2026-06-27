@@ -14,7 +14,7 @@ export function HealthGauge() {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative h-[160px] w-full">
+      <div className="relative h-[200px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -23,8 +23,8 @@ export function HealthGauge() {
               nameKey="label"
               cx="50%"
               cy="50%"
-              innerRadius={52}
-              outerRadius={72}
+              innerRadius={62}
+              outerRadius={82}
               paddingAngle={3}
               startAngle={90}
               endAngle={-270}
@@ -41,7 +41,7 @@ export function HealthGauge() {
           <span className="text-xs font-medium text-emerald-600">Baik</span>
         </div>
       </div>
-      <div className="mt-3 grid w-full grid-cols-2 gap-2">
+      <div className="mt-5 pb-2 grid w-full grid-cols-2 gap-2">
         {data.map((d) => (
           <div key={d.label} className="flex items-center gap-1.5 text-xs text-slate-500">
             <span className="size-2 rounded-full" style={{ background: d.color }} />

@@ -123,7 +123,7 @@ export function Dashboard() {
               </Link>
             }
           >
-            <RestockPriority />
+            <RestockPriority limit={5} />
           </SectionCard>
           <SectionCard title="Kesehatan Operasional">
             <HealthGauge />
@@ -134,7 +134,7 @@ export function Dashboard() {
               <button className="text-xs font-semibold text-primary">Lihat Semua</button>
             }
           >
-            <NotificationsList />
+            <NotificationsList limit={5} />
           </SectionCard>
         </div>
       </Reveal>
