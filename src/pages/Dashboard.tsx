@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import {
   Brain,
   ChevronRight,
+  ChevronDown,
   FileBarChart,
   PackageMinus,
   PackagePlus,
@@ -10,9 +12,14 @@ import {
   TrendingUp,
   Wallet,
   ShoppingBag,
+  Bell,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  FileText,
 } from "lucide-react"
 import { useSikoraStore } from "@/store/useSikoraStore"
-import { isToday } from "@/lib/format"
+import { isToday, waktuLalu } from "@/lib/format"
 import { aiRecommendCount } from "@/lib/dashboard"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
@@ -24,7 +31,13 @@ import { ActivityChart } from "@/components/dashboard/ActivityChart"
 import { HealthGauge } from "@/components/dashboard/HealthGauge"
 import { RestockPriority } from "@/components/dashboard/RestockPriority"
 import { NotificationsList } from "@/components/dashboard/NotificationsList"
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 const QUICK = [
   { label: "Kasir POS", icon: ShoppingCart, to: "/pos", tone: "text-blue-600 bg-blue-50" },
   { label: "Barang Masuk", icon: PackagePlus, to: "/persediaan", tone: "text-emerald-600 bg-emerald-50" },
@@ -34,19 +47,14 @@ const QUICK = [
   { label: "Laporan", icon: FileBarChart, to: "/pembukuan", tone: "text-slate-600 bg-slate-100" },
 ]
 
-function Dropdown({ label }: { label: string }) {
-  return (
-    <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-      {label}
-      <ChevronRight className="size-3.5 rotate-90 text-slate-400" />
-    </button>
-  )
-}
-
 export function Dashboard() {
+  const [timeframe, setTimeframe] = useState<"harian" | "mingguan" | "bulanan">("mingguan")
+  const [notifOpen, setNotifOpen] = useState(false)
+
   const transactions = useSikoraStore((s) => s.transactions)
   const movements = useSikoraStore((s) => s.movements)
   const products = useSikoraStore((s) => s.products)
+  const notifications = useSikoraStore((s) => s.notifications)
 
   const txToday = transactions.filter((t) => isToday(t.at)).length
   const masukToday = movements.filter((m) => m.type === "masuk" && isToday(m.at)).length
@@ -113,8 +121,24 @@ export function Dashboard() {
       {/* Activity / Restock / Health / Notifications */}
       <Reveal delay={0.05}>
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <SectionCard title="Aktivitas Operasional" action={<Dropdown label="Mingguan" />}>
-            <ActivityChart />
+          <SectionCard
+            title="Aktivitas Operasional"
+            action={
+              <div className="relative inline-block">
+                <select
+                  value={timeframe}
+                  onChange={(e) => setTimeframe(e.target.value as any)}
+                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+                >
+                  <option value="harian">Harian</option>
+                  <option value="mingguan">Mingguan</option>
+                  <option value="bulanan">Bulanan</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+              </div>
+            }
+          >
+            <ActivityChart timeframe={timeframe} />
           </SectionCard>
           <SectionCard
             title="Prioritas Restock"
@@ -128,11 +152,35 @@ export function Dashboard() {
           </SectionCard>
           <SectionCard title="Kesehatan Operasional">
             <HealthGauge />
+            
+            {/* Extra details to balance layout height and eliminate whitespace */}
+            <div className="mt-4 border-t border-slate-100 pt-4 space-y-2.5">
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider">Kepatuhan</span>
+                  <span className="text-slate-700">96%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full rounded-full" style={{ width: "96%" }} />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider">Akurasi AI</span>
+                  <span className="text-slate-700">89%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                  <div className="bg-violet-600 h-full rounded-full" style={{ width: "89%" }} />
+                </div>
+              </div>
+            </div>
           </SectionCard>
           <SectionCard
             title="Notifikasi"
             action={
-              <button className="text-xs font-semibold text-primary">Lihat Semua</button>
+              <button onClick={() => setNotifOpen(true)} className="text-xs font-semibold text-primary">
+                Lihat Semua
+              </button>
             }
           >
             <NotificationsList limit={5} />
@@ -181,6 +229,57 @@ export function Dashboard() {
           </SectionCard>
         </div>
       </Reveal>
+
+      {/* Notifications History Modal */}
+      <Dialog open={notifOpen} onOpenChange={setNotifOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] flex flex-col p-6">
+          <DialogHeader className="shrink-0 pb-2">
+            <DialogTitle className="flex items-center gap-2 text-slate-800 text-lg font-bold">
+              <Bell className="size-5 text-blue-600" /> Riwayat Notifikasi Sistem
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400 mt-1">
+              Daftar seluruh aktivitas sinkronisasi data, transaksi harian, dan peringatan AI.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto min-h-0 pr-1 py-1 space-y-3">
+            {notifications.length === 0 ? (
+              <p className="text-center py-8 text-xs text-slate-400">Tidak ada notifikasi sistem saat ini.</p>
+            ) : (
+              notifications.map((n) => {
+                let Icon = Bell
+                let tone = "bg-blue-50 text-blue-600 border-blue-100"
+                if (n.kind === "warning") {
+                  Icon = AlertTriangle
+                  tone = "bg-rose-50 text-rose-600 border-rose-100"
+                } else if (n.kind === "success") {
+                  Icon = CheckCircle2
+                  tone = "bg-emerald-50 text-emerald-600 border-emerald-100"
+                } else if (n.kind === "ai") {
+                  Icon = Sparkles
+                  tone = "bg-violet-50 text-violet-600 border-violet-100"
+                } else if (n.kind === "report") {
+                  Icon = FileText
+                  tone = "bg-slate-50 text-slate-600 border-slate-150"
+                }
+                
+                return (
+                  <div key={n.id} className="flex gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm hover:border-slate-200 transition-colors">
+                    <div className={`flex size-8.5 shrink-0 items-center justify-center rounded-lg border ${tone}`}>
+                      <Icon className="size-4.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold leading-normal text-slate-800">{n.title}</p>
+                      {n.detail && <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{n.detail}</p>}
+                      <p className="mt-1.5 text-[9.5px] text-slate-400 font-bold">{waktuLalu(n.at)}</p>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
