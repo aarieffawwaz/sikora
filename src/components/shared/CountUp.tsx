@@ -45,8 +45,8 @@ export function CountUp({
         return (
           <span
             key={index}
-            className="inline-block overflow-hidden relative align-baseline font-mono text-center"
-            style={{ height: "1em", lineHeight: "1em", width: "0.6em" }}
+            className="inline-block overflow-hidden relative align-baseline text-center tabular-nums"
+            style={{ height: "1em", lineHeight: "1em" }}
           >
             <span
               className="flex flex-col"
@@ -59,7 +59,7 @@ export function CountUp({
                 <span
                   key={d}
                   className="inline-flex items-center justify-center"
-                  style={{ height: "1em", width: "0.6em" }}
+                  style={{ height: "1em" }}
                 >
                   {d}
                 </span>

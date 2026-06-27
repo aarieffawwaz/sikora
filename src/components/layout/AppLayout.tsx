@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom"
 import { Sidebar } from "./Sidebar"
+import { MessagingDrawer } from "@/components/shared/MessagingDrawer"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { cn } from "@/lib/utils"
 
@@ -13,6 +14,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <MessagingDrawer />
     </div>
   )
 }

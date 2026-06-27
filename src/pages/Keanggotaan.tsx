@@ -9,10 +9,10 @@ import {
   ShieldCheck,
   Calendar,
   UserCheck,
-  Mail,
   Phone,
   Search,
   ChevronDown,
+  MessageSquare,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -619,7 +619,7 @@ export function Keanggotaan() {
             }`}
           >
             <Network className="size-4" />
-            Jejaring Obsidian (Node Graph)
+            Jejaring Node Anggota
           </button>
         </div>
 
@@ -644,57 +644,57 @@ export function Keanggotaan() {
           subtitle={
             viewMode === "hierarchy"
               ? "Menampilkan jalur kepemimpinan dan penugasan divisi"
-              : "Tarik (drag) foto anggota menggunakan mouse untuk merasakan pergerakan elastic bubble jejaring Obsidian."
-          }
-          action={
-            /* Cascading Filter Controls */
-            <div className="flex flex-wrap gap-2">
-              {/* Provinsi */}
-              <div className="relative">
-                <select
-                  value={selectedProvinsi}
-                  onChange={(e) => handleProvinsiChange(e.target.value)}
-                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
-                >
-                  <option value="Semua">Provinsi: Semua</option>
-                  <option value="Jawa Barat">Jawa Barat</option>
-                  <option value="Jawa Tengah">Jawa Tengah</option>
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
-              </div>
-
-              {/* Kabupaten */}
-              <div className="relative">
-                <select
-                  value={selectedKabupaten}
-                  onChange={(e) => handleKabupatenChange(e.target.value)}
-                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
-                >
-                  <option value="Semua">Kabupaten: Semua</option>
-                  {kabupatenOptions.map((kab) => (
-                    <option key={kab} value={kab}>{kab}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
-              </div>
-
-              {/* Kelurahan */}
-              <div className="relative">
-                <select
-                  value={selectedKelurahan}
-                  onChange={(e) => setSelectedKelurahan(e.target.value)}
-                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
-                >
-                  <option value="Semua">Kelurahan: Semua</option>
-                  {kelurahanOptions.map((kel) => (
-                    <option key={kel} value={kel}>{kel}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
-              </div>
-            </div>
+              : "Tarik (drag) foto anggota menggunakan mouse untuk merasakan pergerakan elastic bubble jejaring node."
           }
         >
+          {/* Cascading Filter Controls inside card content */}
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3 mb-4 shrink-0">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1.5">Filter Wilayah:</span>
+            {/* Provinsi */}
+            <div className="relative">
+              <select
+                value={selectedProvinsi}
+                onChange={(e) => handleProvinsiChange(e.target.value)}
+                className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-650 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+              >
+                <option value="Semua">Provinsi: Semua</option>
+                <option value="Jawa Barat">Jawa Barat</option>
+                <option value="Jawa Tengah">Jawa Tengah</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+            </div>
+
+            {/* Kabupaten */}
+            <div className="relative">
+              <select
+                value={selectedKabupaten}
+                onChange={(e) => handleKabupatenChange(e.target.value)}
+                className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-650 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+              >
+                <option value="Semua">Kabupaten: Semua</option>
+                {kabupatenOptions.map((kab) => (
+                  <option key={kab} value={kab}>{kab}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+            </div>
+
+            {/* Kelurahan */}
+            <div className="relative">
+              <select
+                value={selectedKelurahan}
+                onChange={(e) => setSelectedKelurahan(e.target.value)}
+                className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-650 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+              >
+                <option value="Semua">Kelurahan: Semua</option>
+                {kelurahanOptions.map((kel) => (
+                  <option key={kel} value={kel}>{kel}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+            </div>
+          </div>
+
           {viewMode === "hierarchy" ? (
             /* --- HIERARCHY / ORG CHART VIEW --- */
             <div className="flex-1 py-8 flex flex-col items-center min-w-[700px] overflow-visible select-none">
@@ -1000,16 +1000,27 @@ export function Keanggotaan() {
               <div className="border-t border-slate-100 pt-4 flex gap-2">
                 <button
                   onClick={() => handleContact(selectedMember.name)}
-                  className="flex-1 flex justify-center items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white py-2 text-xs font-bold transition-all shadow-sm shadow-blue-500/20"
+                  className="flex-1 flex justify-center items-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 text-xs font-bold transition-all shadow-sm shadow-emerald-500/20"
                 >
-                  <Mail className="size-3.5" /> Hubungi
+                  <Phone className="size-3.5" /> WhatsApp
                 </button>
-                <a
-                  href={`tel:${selectedMember.phone}`}
-                  className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(
+                      new CustomEvent("open-sikora-chat", {
+                        detail: {
+                          id: selectedMember.id,
+                          name: selectedMember.name,
+                          role: selectedMember.role,
+                          avatar: selectedMember.avatar,
+                        },
+                      })
+                    )
+                  }}
+                  className="flex-1 flex justify-center items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white py-2.5 text-xs font-bold transition-all shadow-sm shadow-blue-500/20"
                 >
-                  <Phone className="size-3.5" />
-                </a>
+                  <MessageSquare className="size-3.5" /> Kirim Pesan
+                </button>
               </div>
             </SectionCard>
           </div>
