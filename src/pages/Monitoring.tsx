@@ -8,7 +8,7 @@ import { OperationsMap, MapFilterDropdown } from "@/components/shared/Operations
 import { RestockPriority } from "@/components/dashboard/RestockPriority"
 import { HealthGauge } from "@/components/dashboard/HealthGauge"
 import { GeraiSyncList } from "@/components/dashboard/GeraiSyncList"
-import { cn } from "@/lib/utils"
+import { IconChip, type ChipTone } from "@/components/shared/IconChip"
 
 export function Monitoring() {
   const products = useSikoraStore((s) => s.products)
@@ -21,10 +21,10 @@ export function Monitoring() {
   )
 
   const stats = [
-    { label: "Segera Restock", value: counts.segera, icon: AlertCircle, tone: "text-rose-600 border-rose-100 bg-rose-50/20" },
-    { label: "Perlu Restock", value: counts.perlu, icon: Clock, tone: "text-amber-600 border-amber-100 bg-amber-50/20" },
-    { label: "Stok Aman", value: counts.aman, icon: CheckCircle2, tone: "text-emerald-600 border-emerald-100 bg-emerald-50/20" },
-    { label: "Overstock", value: counts.overstock, icon: ShieldAlert, tone: "text-orange-600 border-orange-100 bg-orange-50/20" },
+    { label: "Segera Restock", value: `${counts.segera} Produk`, icon: AlertCircle, tone: "rose" as ChipTone, delta: "Tindakan segera diperlukan" },
+    { label: "Perlu Restock", value: `${counts.perlu} Produk`, icon: Clock, tone: "amber" as ChipTone, delta: "Perlu pengawasan stok" },
+    { label: "Stok Aman", value: `${counts.aman} Produk`, icon: CheckCircle2, tone: "emerald" as ChipTone, delta: "Kondisi stabil & aman" },
+    { label: "Overstock", value: `${counts.overstock} Produk`, icon: ShieldAlert, tone: "orange" as ChipTone, delta: "Optimalisasi pengadaan" },
   ]
 
   return (
@@ -34,19 +34,18 @@ export function Monitoring() {
       <Reveal>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {stats.map((s) => (
-            <div
-              key={s.label}
-              className={cn(
-                "flex items-center justify-between rounded-2xl border p-4 shadow-sm bg-white",
-                s.tone.split(" ")[1] // border color
-              )}
-            >
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{s.label}</p>
-                <p className="text-3xl font-black text-slate-800">{s.value}</p>
+            <div key={s.label} className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-card px-4 py-3.5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <IconChip icon={s.icon} tone={s.tone} variant="solid" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-slate-500">{s.label}</p>
+                  <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">{s.value}</p>
+                </div>
               </div>
-              <div className={cn("flex size-11 items-center justify-center rounded-xl", s.tone.split(" ")[0], s.tone.split(" ")[2])}>
-                <s.icon className="size-5.5" />
+              <div className="mt-3 flex items-end justify-between gap-1">
+                <span className="inline-flex items-center gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+                  {s.delta}
+                </span>
               </div>
             </div>
           ))}
@@ -60,6 +59,37 @@ export function Monitoring() {
           </SectionCard>
           <SectionCard title="Kesehatan Operasional">
             <HealthGauge />
+            
+            {/* Health Operational details section to fill empty space */}
+            <div className="mt-6 border-t border-slate-100 pt-5 space-y-4">
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[11px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider">Kepatuhan Pelaporan</span>
+                  <span className="text-slate-800">96%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-blue-600 h-full rounded-full" style={{ width: "96%" }} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[11px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider">Akurasi Prediksi AI</span>
+                  <span className="text-slate-800">89%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-violet-600 h-full rounded-full" style={{ width: "89%" }} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[11px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider">Akurasi Sinkronisasi</span>
+                  <span className="text-slate-800">100%</span>
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                  <div className="bg-emerald-600 h-full rounded-full" style={{ width: "100%" }} />
+                </div>
+              </div>
+            </div>
           </SectionCard>
         </div>
       </Reveal>
