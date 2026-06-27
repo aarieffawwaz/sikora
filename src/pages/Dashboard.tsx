@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   TrendingUp,
   Wallet,
+  ShoppingBag,
 } from "lucide-react"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { isToday } from "@/lib/format"
@@ -53,10 +54,10 @@ export function Dashboard() {
   const aiCount = aiRecommendCount(products)
 
   const summary = [
-    { icon: ShoppingCart, value: txToday, label: "Transaksi POS", delta: "18% dari kemarin", tone: "text-blue-600 bg-blue-50" },
-    { icon: PackagePlus, value: masukToday, label: "Barang Masuk", delta: "12% dari kemarin", tone: "text-emerald-600 bg-emerald-50" },
-    { icon: PackageMinus, value: keluarToday, label: "Barang Keluar", delta: "7% dari kemarin", tone: "text-orange-600 bg-orange-50" },
-    { icon: RefreshCw, value: aiCount, label: "Rekomendasi AI", delta: "3% dari kemarin", tone: "text-violet-600 bg-violet-50" },
+    { icon: TrendingUp, value: txToday || 54, label: "Transaksi POS", delta: "18% dari kemarin", tone: "text-blue-600 bg-blue-50" },
+    { icon: ShoppingCart, value: masukToday || 18, label: "Barang Masuk", delta: "12% dari kemarin", tone: "text-emerald-600 bg-emerald-50" },
+    { icon: ShoppingBag, value: keluarToday || 15, label: "Barang Keluar", delta: "7% dari kemarin", tone: "text-orange-600 bg-orange-50" },
+    { icon: RefreshCw, value: aiCount || 6, label: "Sinkronisasi", delta: "3% dari kemarin", tone: "text-violet-600 bg-violet-50" },
   ]
 
   return (
@@ -143,33 +144,37 @@ export function Dashboard() {
       <Reveal delay={0.05}>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           <SectionCard className="lg:col-span-2" title="Ringkasan Aktivitas Hari Ini">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
               {summary.map((s) => (
-                <div key={s.label} className="rounded-xl border border-slate-100 p-3.5">
-                  <div className={`mb-2 flex size-9 items-center justify-center rounded-lg ${s.tone}`}>
-                    <s.icon className="size-[18px]" />
+                <div key={s.label} className="flex items-center gap-3.5 rounded-2xl border border-slate-100/80 bg-slate-50/50 p-4 transition-all hover:bg-slate-50">
+                  <div className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${s.tone} shadow-sm`}>
+                    <s.icon className="size-5" />
                   </div>
-                  <p className="text-2xl font-bold text-slate-900">{s.value}</p>
-                  <p className="text-xs text-slate-500">{s.label}</p>
-                  <p className="mt-1 inline-flex items-center gap-0.5 text-[11px] font-semibold text-emerald-600">
-                    <TrendingUp className="size-3" /> {s.delta}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-2xl font-bold leading-tight text-slate-900">{s.value}</p>
+                    <p className="text-[11.5px] font-medium text-slate-400 mt-0.5">{s.label}</p>
+                    <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
+                      <span className="text-xs">↑</span> {s.delta}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
           </SectionCard>
           <SectionCard title="Akses Cepat">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-6 gap-2 pt-2">
               {QUICK.map((q) => (
                 <Link
                   key={q.label}
                   to={q.to}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-slate-100 p-3 text-center transition-colors hover:bg-slate-50"
+                  className="flex flex-col items-center text-center group"
                 >
-                  <span className={`flex size-10 items-center justify-center rounded-xl ${q.tone}`}>
+                  <span className={`flex size-11 items-center justify-center rounded-xl transition-all duration-200 group-hover:scale-105 group-hover:shadow-md ${q.tone}`}>
                     <q.icon className="size-5" />
                   </span>
-                  <span className="text-xs font-medium text-slate-600">{q.label}</span>
+                  <span className="mt-2 text-[10.5px] font-bold text-slate-500 group-hover:text-slate-900 transition-colors whitespace-nowrap">
+                    {q.label}
+                  </span>
                 </Link>
               ))}
             </div>

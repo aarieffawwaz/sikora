@@ -88,8 +88,8 @@ export function Persediaan() {
                   <th className="pb-3 pl-2">Produk</th>
                   <th className="pb-3">Kategori</th>
                   <th className="pb-3 text-right">Stok</th>
-                  <th className="pb-3 text-right">Harga</th>
-                  <th className="pb-3">Status AI</th>
+                  <th className="pb-3 text-right pr-6">Harga</th>
+                  <th className="pb-3 pl-4">Status AI</th>
                   <th className="pb-3">Rekomendasi AI</th>
                   <th className="pb-3 text-right pr-2">Aksi</th>
                 </tr>
@@ -110,8 +110,8 @@ export function Persediaan() {
                       <td className="text-right font-semibold text-slate-800">
                         {p.stock} <span className="text-xs font-normal text-slate-400">{p.unit}</span>
                       </td>
-                      <td className="text-right text-slate-500">{rupiah(p.price)}</td>
-                      <td>
+                      <td className="text-right text-slate-500 pr-6">{rupiah(p.price)}</td>
+                      <td className="pl-4">
                         <SeverityBadge severity={r.severity} />
                       </td>
                       <td>
