@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
@@ -12,6 +12,7 @@ import {
   Mail,
   Phone,
   Search,
+  ChevronDown,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -33,15 +34,19 @@ interface Member {
   phone: string
   email: string
   activities: string[]
+  // Location tags:
+  provinsi: string
+  kabupaten: string
+  kelurahan: string
 }
 
 const MEMBERS: Member[] = [
   {
     id: "m1",
-    name: "Charles Williams",
+    name: "Budi Santoso",
     role: "Ketua Koperasi",
     dept: "Pengurus Harian",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150",
     code: "SKJ-001",
     joined: "12 Jan 2021",
     status: "Aktif",
@@ -51,19 +56,22 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 99,
     phone: "+62 811-1234-567",
-    email: "charles.williams@sikora.coop",
+    email: "budi.santoso@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Sukamaju",
     activities: [
-      "Menandatangani laporan pertanggungjawaban tahunan",
+      "Menandatangani laporan pertanggungjawaban tahunan KDKMP",
       "Persetujuan kemitraan rantai pasok dengan KDKMP Wilayah",
       "Membuka rapat koordinasi bulanan pengurus",
     ],
   },
   {
     id: "m2",
-    name: "Robert Jones",
+    name: "Ahmad Hidayat",
     role: "Manajer Operasional",
     dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150",
     parentId: "m1",
     code: "SKJ-002",
     joined: "18 Feb 2021",
@@ -74,7 +82,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 97,
     phone: "+62 812-9876-543",
-    email: "robert.jones@sikora.coop",
+    email: "ahmad.hidayat@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Cibiru",
     activities: [
       "Verifikasi pengadaan beras gerai Margahayu",
       "Rekonsiliasi transaksi offline POS Gerai Cibiru",
@@ -83,10 +94,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m3",
-    name: "Lisa Moore",
+    name: "Siti Aminah",
     role: "Manajer Keuangan",
     dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
     parentId: "m1",
     code: "SKJ-003",
     joined: "05 Mar 2021",
@@ -97,7 +108,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 98,
     phone: "+62 813-4455-667",
-    email: "lisa.moore@sikora.coop",
+    email: "siti.aminah@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Margahayu",
     activities: [
       "Penyusunan laporan arus kas Mei 2026",
       "Pencairan dana talangan restock sembako",
@@ -106,10 +120,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m4",
-    name: "Natalie Smith",
+    name: "Dewi Lestari",
     role: "Manajer Kemitraan & AI",
     dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
     parentId: "m1",
     code: "SKJ-004",
     joined: "20 Mei 2021",
@@ -120,19 +134,22 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 96,
     phone: "+62 815-2233-445",
-    email: "natalie.smith@sikora.coop",
+    email: "dewi.lestari@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Sukamaju",
     activities: [
       "Kalibrasi model prediksi AI DSS untuk restock",
-      "Penambahan gerai sync baru di margahayu",
+      "Penambahan gerai sync baru di Margahayu",
       "Sosialisasi sistem keanggotaan digital grassroot",
     ],
   },
   {
     id: "m5",
-    name: "Francisco Maia",
+    name: "Fajar Nugroho",
     role: "Supervisor Gudang",
     dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150",
     parentId: "m2",
     code: "SKJ-005",
     joined: "10 Jun 2022",
@@ -143,7 +160,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 94,
     phone: "+62 819-7788-990",
-    email: "francisco.maia@sikora.coop",
+    email: "fajar.nugroho@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Cibiru",
     activities: [
       "Input barang masuk Tepung Terigu 80kg",
       "Update status stok kaku beras premium",
@@ -151,10 +171,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m6",
-    name: "Salma Fonseca",
+    name: "Sri Wahyuni",
     role: "Kasir Gerai Sukamaju",
     dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
     parentId: "m2",
     code: "SKJ-006",
     joined: "01 Sep 2022",
@@ -165,7 +185,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 95,
     phone: "+62 821-3344-556",
-    email: "salma.fonseca@sikora.coop",
+    email: "sri.wahyuni@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Sukamaju",
     activities: [
       "Melayani 45 transaksi POS hari ini",
       "Penyetoran kas harian gerai pusat",
@@ -173,10 +196,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m7",
-    name: "Ruben Alvarez",
+    name: "Bambang Wijaya",
     role: "Staf Logistik",
     dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
     parentId: "m2",
     code: "SKJ-007",
     joined: "15 Des 2022",
@@ -187,7 +210,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 92,
     phone: "+62 822-6677-889",
-    email: "ruben.alvarez@sikora.coop",
+    email: "bambang.wijaya@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Cibiru",
     activities: [
       "Pengiriman logistik minyak goreng ke gerai Cibiru",
       "Pengecekan armada kendaraan kurir",
@@ -195,10 +221,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m8",
-    name: "Silvia Caballero",
+    name: "Rina Kartika",
     role: "Staf Akuntansi",
     dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
     parentId: "m3",
     code: "SKJ-008",
     joined: "01 Feb 2023",
@@ -209,7 +235,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 96,
     phone: "+62 856-1122-334",
-    email: "silvia.caballero@sikora.coop",
+    email: "rina.kartika@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Margahayu",
     activities: [
       "Posting jurnal transaksi penjualan sembako",
       "Penyusunan rekonsiliasi bank BCA",
@@ -217,10 +246,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m9",
-    name: "Pedro Ackner",
+    name: "Hadi Pranoto",
     role: "Staf Pajak",
     dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150",
+    avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150",
     parentId: "m3",
     code: "SKJ-009",
     joined: "12 Apr 2023",
@@ -231,7 +260,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 93,
     phone: "+62 857-4455-667",
-    email: "pedro.ackner@sikora.coop",
+    email: "hadi.pranoto@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Margahayu",
     activities: [
       "Penginputan e-Faktur PPN Masukan koperasi",
       "Penyetoran PPh 21 bulanan karyawan",
@@ -239,10 +271,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m10",
-    name: "Manuel Wilson",
+    name: "Eko Prasetyo",
     role: "Penyuluh Grassroot",
     dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150",
     parentId: "m4",
     code: "SKJ-010",
     joined: "18 Jun 2023",
@@ -253,18 +285,21 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 97,
     phone: "+62 878-8899-001",
-    email: "manuel.wilson@sikora.coop",
+    email: "eko.prasetyo@sikora.coop",
+    provinsi: "Jawa Tengah",
+    kabupaten: "Sleman",
+    kelurahan: "Candi",
     activities: [
-      "Sosialisasi tata kelola koperasi di Desa Sukamaju",
+      "Sosialisasi tata kelola koperasi di Desa Sleman",
       "Registrasi 14 anggota masyarakat baru",
     ],
   },
   {
     id: "m11",
-    name: "Julieta Oldhof",
+    name: "Rian Hidayat",
     role: "Staf IT Support",
     dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     parentId: "m4",
     code: "SKJ-011",
     joined: "01 Nov 2023",
@@ -275,7 +310,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 94,
     phone: "+62 899-2233-445",
-    email: "julieta.oldhof@sikora.coop",
+    email: "rian.hidayat@sikora.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Sumedang",
+    kelurahan: "Jatinangor",
     activities: [
       "Setting tablet POS baru di gerai Cibiru",
       "Monitoring konektivitas VPN data sinkronisasi",
@@ -283,10 +321,10 @@ const MEMBERS: Member[] = [
   },
   {
     id: "m12",
-    name: "Dunia Sigachyova",
+    name: "Fitriani",
     role: "Hubungan Anggota",
     dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=150",
+    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=150",
     parentId: "m4",
     code: "SKJ-012",
     joined: "15 Jan 2024",
@@ -297,7 +335,10 @@ const MEMBERS: Member[] = [
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 96,
     phone: "+62 896-5566-778",
-    email: "dunia.sigachyova@sikora.coop",
+    email: "fitriani@sikora.coop",
+    provinsi: "Jawa Tengah",
+    kabupaten: "Sleman",
+    kelurahan: "Candi",
     activities: [
       "Menjawab keluhan anggota tentang limit pinjaman",
       "Penyebaran bulletin triwulan KDKMP digital",
@@ -305,13 +346,73 @@ const MEMBERS: Member[] = [
   },
 ]
 
+// Initial static coordinates for network graph
+const INITIAL_NODE_POSITIONS: Record<string, { x: number; y: number; size: number }> = {
+  m1: { x: 260, y: 210, size: 72 }, // Budi (Chairman)
+  m2: { x: 120, y: 150, size: 52 }, // Ahmad (Ops Manager)
+  m3: { x: 260, y: 70, size: 52 },  // Siti (Finance Manager)
+  m4: { x: 400, y: 150, size: 52 }, // Dewi (AI Manager)
+  m5: { x: 40, y: 80, size: 36 },   // Fajar
+  m6: { x: 30, y: 170, size: 36 },  // Sri
+  m7: { x: 90, y: 250, size: 36 },  // Bambang
+  m8: { x: 185, y: 30, size: 36 },  // Rina
+  m9: { x: 335, y: 30, size: 36 },  // Hadi
+  m10: { x: 430, y: 250, size: 36 }, // Eko
+  m11: { x: 490, y: 170, size: 36 }, // Rian
+  m12: { x: 480, y: 80, size: 36 },  // Fitriani
+}
+
 export function Keanggotaan() {
   const [viewMode, setViewMode] = useState<"hierarchy" | "network">("hierarchy")
   const [selectedId, setSelectedId] = useState<string>("m1")
   const [searchQuery, setSearchQuery] = useState("")
 
-  const selectedMember = MEMBERS.find((m) => m.id === selectedId) || MEMBERS[0]
+  // Cascading filter states
+  const [selectedProvinsi, setSelectedProvinsi] = useState("Semua")
+  const [selectedKabupaten, setSelectedKabupaten] = useState("Semua")
+  const [selectedKelurahan, setSelectedKelurahan] = useState("Semua")
 
+  // Drag states for Network Graph
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number; size: number }>>(INITIAL_NODE_POSITIONS)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Reset drag positions if view mode changes
+  useEffect(() => {
+    setPositions(INITIAL_NODE_POSITIONS)
+  }, [viewMode])
+
+  // Get cascading options
+  const kabupatenOptions = selectedProvinsi === "Semua"
+    ? Array.from(new Set(MEMBERS.map((m) => m.kabupaten)))
+    : Array.from(new Set(MEMBERS.filter((m) => m.provinsi === selectedProvinsi).map((m) => m.kabupaten)))
+
+  const kelurahanOptions = selectedKabupaten === "Semua"
+    ? Array.from(new Set(MEMBERS.map((m) => m.kelurahan)))
+    : Array.from(new Set(MEMBERS.filter((m) => m.kabupaten === selectedKabupaten).map((m) => m.kelurahan)))
+
+  // Handle cascading reset on parent change
+  const handleProvinsiChange = (prov: string) => {
+    setSelectedProvinsi(prov)
+    setSelectedKabupaten("Semua")
+    setSelectedKelurahan("Semua")
+  }
+
+  const handleKabupatenChange = (kab: string) => {
+    setSelectedKabupaten(kab)
+    setSelectedKelurahan("Semua")
+  }
+
+  // Active status helper
+  const isMemberMatchingFilters = (m: Member) => {
+    if (selectedProvinsi !== "Semua" && m.provinsi !== selectedProvinsi) return false
+    if (selectedKabupaten !== "Semua" && m.kabupaten !== selectedKabupaten) return false
+    if (selectedKelurahan !== "Semua" && m.kelurahan !== selectedKelurahan) return false
+    return true
+  }
+
+  // Auto-select on search
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const matched = MEMBERS.find((m) =>
@@ -324,30 +425,48 @@ export function Keanggotaan() {
     }
   }, [searchQuery])
 
+  const selectedMember = MEMBERS.find((m) => m.id === selectedId) || MEMBERS[0]
+
   const handleContact = (name: string) => {
     toast.success(`Menghubungi ${name}... Pesan Whatsapp berhasil dikirim via SIKORA Gateway.`)
   }
 
-  // Radial coordinates for Obsidian-like Network graph
-  // Center is Charles Williams (x: 250, y: 200)
-  // Ring 1 (Managers): Robert (110, 100), Lisa (250, 60), Natalie (390, 100)
-  // Ring 2 (Staffs):
-  // Under Robert: Francisco (40, 50), Salma (30, 150), Ruben (90, 220)
-  // Under Lisa: Silvia (170, 20), Pedro (330, 20)
-  // Under Natalie: Manuel (410, 220), Julieta (470, 150), Dunia (460, 50)
-  const NODE_POSITIONS: Record<string, { x: number; y: number; size: number }> = {
-    m1: { x: 260, y: 210, size: 76 }, // Center (Chairman)
-    m2: { x: 120, y: 150, size: 54 }, // Operations Manager
-    m3: { x: 260, y: 70, size: 54 },  // Finance Manager
-    m4: { x: 400, y: 150, size: 54 }, // Partnership/AI Manager
-    m5: { x: 40, y: 80, size: 38 },   // Warehouse Supervisor
-    m6: { x: 30, y: 170, size: 38 },  // Cashier
-    m7: { x: 90, y: 250, size: 38 },  // Logistics
-    m8: { x: 180, y: 30, size: 38 },  // Accountant
-    m9: { x: 340, y: 30, size: 38 },  // Tax
-    m10: { x: 430, y: 250, size: 38 }, // Grassroots Facilitator
-    m11: { x: 490, y: 170, size: 38 }, // IT Support
-    m12: { x: 480, y: 80, size: 38 },  // Member Relations
+  // Draggable node graph mouse event handlers
+  const handleNodeMouseDown = (e: React.MouseEvent, id: string) => {
+    e.preventDefault()
+    setDraggingId(id)
+    const pos = positions[id]
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (rect) {
+      const mouseX = e.clientX - rect.left
+      const mouseY = e.clientY - rect.top
+      setDragOffset({ x: mouseX - pos.x, y: mouseY - pos.y })
+    }
+    setSelectedId(id)
+  }
+
+  const handleContainerMouseMove = (e: React.MouseEvent) => {
+    if (!draggingId || !containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
+
+    const newX = mouseX - dragOffset.x
+    const newY = mouseY - dragOffset.y
+
+    setPositions((prev) => ({
+      ...prev,
+      [draggingId]: {
+        ...prev[draggingId],
+        // Drag limit boundaries
+        x: Math.max(30, Math.min(rect.width - 30, newX)),
+        y: Math.max(30, Math.min(rect.height - 30, newY)),
+      },
+    }))
+  }
+
+  const handleContainerMouseUp = () => {
+    setDraggingId(null)
   }
 
   return (
@@ -357,6 +476,7 @@ export function Keanggotaan() {
         subtitle="Rekayasa transparansi tata kelola dan visualisasi jejaring sistem keanggotaan digital."
       />
 
+      {/* Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         {/* Toggle View Mode */}
         <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
@@ -385,7 +505,7 @@ export function Keanggotaan() {
         </div>
 
         {/* Search bar */}
-        <div className="relative w-64">
+        <div className="relative w-60">
           <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -400,12 +520,60 @@ export function Keanggotaan() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Graph Display Area */}
         <SectionCard
-          className="lg:col-span-2 min-h-[560px] flex flex-col justify-between overflow-x-auto"
-          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola"}
+          className="lg:col-span-2 min-h-[600px] flex flex-col overflow-visible"
+          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola (Draggable)"}
           subtitle={
             viewMode === "hierarchy"
               ? "Menampilkan jalur kepemimpinan dan penugasan divisi"
-              : "Visualisasi radial interaksi keanggotaan berbasis Obsidian Node"
+              : "Klik dan seret (drag) foto anggota untuk menggerakkan jejaring Obsidian secara real-time"
+          }
+          action={
+            /* Cascading Filter Controls */
+            <div className="flex flex-wrap gap-2">
+              {/* Provinsi */}
+              <div className="relative">
+                <select
+                  value={selectedProvinsi}
+                  onChange={(e) => handleProvinsiChange(e.target.value)}
+                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+                >
+                  <option value="Semua">Provinsi: Semua</option>
+                  <option value="Jawa Barat">Jawa Barat</option>
+                  <option value="Jawa Tengah">Jawa Tengah</option>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+              </div>
+
+              {/* Kabupaten */}
+              <div className="relative">
+                <select
+                  value={selectedKabupaten}
+                  onChange={(e) => handleKabupatenChange(e.target.value)}
+                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+                >
+                  <option value="Semua">Kabupaten: Semua</option>
+                  {kabupatenOptions.map((kab) => (
+                    <option key={kab} value={kab}>{kab}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+              </div>
+
+              {/* Kelurahan */}
+              <div className="relative">
+                <select
+                  value={selectedKelurahan}
+                  onChange={(e) => setSelectedKelurahan(e.target.value)}
+                  className="appearance-none rounded-full border border-slate-200 bg-white pl-3.5 pr-8 py-1.5 text-[11px] font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all shadow-sm"
+                >
+                  <option value="Semua">Kelurahan: Semua</option>
+                  {kelurahanOptions.map((kel) => (
+                    <option key={kel} value={kel}>{kel}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+              </div>
+            </div>
           }
         >
           {viewMode === "hierarchy" ? (
@@ -417,7 +585,7 @@ export function Keanggotaan() {
                   onClick={() => setSelectedId("m1")}
                   className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-52 hover:scale-[1.03] hover:shadow-md ${
                     selectedId === "m1" ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
-                  }`}
+                  } ${isMemberMatchingFilters(MEMBERS[0]) ? "opacity-100" : "opacity-25"}`}
                 >
                   <span className="absolute -top-2.5 bg-blue-100 text-blue-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-blue-200">
                     Leader
@@ -454,7 +622,7 @@ export function Keanggotaan() {
                         onClick={() => setSelectedId(m.id)}
                         className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-48 hover:scale-[1.03] hover:shadow-md ${
                           selectedId === m.id ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
-                        }`}
+                        } ${isMemberMatchingFilters(m) ? "opacity-100" : "opacity-25"}`}
                       >
                         <span className="absolute -top-2.5 bg-violet-100 text-violet-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-violet-200">
                           Manager
@@ -481,9 +649,9 @@ export function Keanggotaan() {
                           <div
                             key={sub.id}
                             onClick={() => setSelectedId(sub.id)}
-                            className={`relative flex items-center gap-2 p-2 rounded-xl border bg-white cursor-pointer transition-all duration-350 hover:scale-[1.02] hover:shadow-sm ${
+                            className={`relative flex items-center gap-2 p-2 rounded-xl border bg-white cursor-pointer transition-all duration-355 hover:scale-[1.02] hover:shadow-sm ${
                               selectedId === sub.id ? "border-blue-600 ring-1.5 ring-blue-500/20" : "border-slate-100"
-                            } before:absolute before:-left-3.5 before:top-1/2 before:-translate-y-1/2 before:w-3.5 before:h-0.5 before:bg-slate-200`}
+                            } ${isMemberMatchingFilters(sub) ? "opacity-100" : "opacity-25"} before:absolute before:-left-3.5 before:top-1/2 before:-translate-y-1/2 before:w-3.5 before:h-0.5 before:bg-slate-200`}
                           >
                             <img
                               src={sub.avatar}
@@ -503,8 +671,14 @@ export function Keanggotaan() {
               </div>
             </div>
           ) : (
-            /* --- OBSIDIAN-STYLE NETWORK/NODE VIEW --- */
-            <div className="flex-1 flex items-center justify-center p-4 overflow-hidden relative select-none min-h-[420px]">
+            /* --- OBSIDIAN-STYLE DRAGGABLE NETWORK/NODE VIEW --- */
+            <div
+              ref={containerRef}
+              onMouseMove={handleContainerMouseMove}
+              onMouseUp={handleContainerMouseUp}
+              onMouseLeave={handleContainerMouseUp}
+              className="flex-1 flex items-center justify-center p-4 overflow-hidden relative select-none min-h-[460px] cursor-grab active:cursor-grabbing bg-slate-50/20 rounded-2xl"
+            >
               {/* Radial background grid */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
                 <div className="border border-slate-900 rounded-full w-[240px] h-[240px] absolute" />
@@ -513,41 +687,42 @@ export function Keanggotaan() {
               </div>
 
               {/* Obsidian Graph Interactive SVG Lines */}
-              <div className="relative w-[520px] h-[320px]">
+              <div className="relative w-[520px] h-[320px] pointer-events-none">
                 <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                  {/* Lines between Charles (m1) and Managers */}
-                  <line x1={NODE_POSITIONS.m1.x} y1={NODE_POSITIONS.m1.y} x2={NODE_POSITIONS.m2.x} y2={NODE_POSITIONS.m2.y} stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3 3" />
-                  <line x1={NODE_POSITIONS.m1.x} y1={NODE_POSITIONS.m1.y} x2={NODE_POSITIONS.m3.x} y2={NODE_POSITIONS.m3.y} stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3 3" />
-                  <line x1={NODE_POSITIONS.m1.x} y1={NODE_POSITIONS.m1.y} x2={NODE_POSITIONS.m4.x} y2={NODE_POSITIONS.m4.y} stroke="#cbd5e1" strokeWidth="2" strokeDasharray="3 3" />
+                  {/* Lines between Budi (m1) and Managers */}
+                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m2.x} y2={positions.m2.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[1]) ? 0.8 : 0.15} />
+                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m3.x} y2={positions.m3.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[2]) ? 0.8 : 0.15} />
+                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m4.x} y2={positions.m4.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[3]) ? 0.8 : 0.15} />
 
                   {/* Lines from Managers to Subordinates */}
-                  {/* Robert's Subordinates */}
-                  <line x1={NODE_POSITIONS.m2.x} y1={NODE_POSITIONS.m2.y} x2={NODE_POSITIONS.m5.x} y2={NODE_POSITIONS.m5.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                  <line x1={NODE_POSITIONS.m2.x} y1={NODE_POSITIONS.m2.y} x2={NODE_POSITIONS.m6.x} y2={NODE_POSITIONS.m6.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                  <line x1={NODE_POSITIONS.m2.x} y1={NODE_POSITIONS.m2.y} x2={NODE_POSITIONS.m7.x} y2={NODE_POSITIONS.m7.y} stroke="#e2e8f0" strokeWidth="1.5" />
+                  {/* Ahmad's (m2) Subordinates */}
+                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m5.x} y2={positions.m5.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[4]) ? 0.7 : 0.1} />
+                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m6.x} y2={positions.m6.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[5]) ? 0.7 : 0.1} />
+                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m7.x} y2={positions.m7.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[6]) ? 0.7 : 0.1} />
 
-                  {/* Lisa's Subordinates */}
-                  <line x1={NODE_POSITIONS.m3.x} y1={NODE_POSITIONS.m3.y} x2={NODE_POSITIONS.m8.x} y2={NODE_POSITIONS.m8.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                  <line x1={NODE_POSITIONS.m3.x} y1={NODE_POSITIONS.m3.y} x2={NODE_POSITIONS.m9.x} y2={NODE_POSITIONS.m9.y} stroke="#e2e8f0" strokeWidth="1.5" />
+                  {/* Siti's (m3) Subordinates */}
+                  <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m8.x} y2={positions.m8.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[7]) ? 0.7 : 0.1} />
+                  <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m9.x} y2={positions.m9.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[8]) ? 0.7 : 0.1} />
 
-                  {/* Natalie's Subordinates */}
-                  <line x1={NODE_POSITIONS.m4.x} y1={NODE_POSITIONS.m4.y} x2={NODE_POSITIONS.m10.x} y2={NODE_POSITIONS.m10.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                  <line x1={NODE_POSITIONS.m4.x} y1={NODE_POSITIONS.m4.y} x2={NODE_POSITIONS.m11.x} y2={NODE_POSITIONS.m11.y} stroke="#e2e8f0" strokeWidth="1.5" />
-                  <line x1={NODE_POSITIONS.m4.x} y1={NODE_POSITIONS.m4.y} x2={NODE_POSITIONS.m12.x} y2={NODE_POSITIONS.m12.y} stroke="#e2e8f0" strokeWidth="1.5" />
+                  {/* Dewi's (m4) Subordinates */}
+                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m10.x} y2={positions.m10.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[9]) ? 0.7 : 0.1} />
+                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m11.x} y2={positions.m11.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[10]) ? 0.7 : 0.1} />
+                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m12.x} y2={positions.m12.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[11]) ? 0.7 : 0.1} />
                 </svg>
 
                 {/* Profile Nodes */}
                 {MEMBERS.map((m) => {
-                  const pos = NODE_POSITIONS[m.id]
+                  const pos = positions[m.id]
                   if (!pos) return null
 
                   const isSelected = selectedId === m.id
                   const size = pos.size
+                  const matches = isMemberMatchingFilters(m)
 
                   return (
-                    <button
+                    <div
                       key={m.id}
-                      onClick={() => setSelectedId(m.id)}
+                      onMouseDown={(e) => handleNodeMouseDown(e, m.id)}
                       style={{
                         position: "absolute",
                         left: pos.x,
@@ -556,11 +731,11 @@ export function Keanggotaan() {
                         height: size,
                         transform: "translate(-50%, -50%)",
                       }}
-                      className={`group flex items-center justify-center rounded-full bg-white transition-all duration-300 hover:scale-110 shadow-sm border ${
+                      className={`group pointer-events-auto flex items-center justify-center rounded-full bg-white transition-shadow duration-200 select-none border cursor-grab active:cursor-grabbing ${
                         isSelected
-                          ? "border-blue-600 ring-4 ring-blue-500/20 scale-105"
-                          : "border-slate-200 hover:border-blue-400 hover:shadow-md"
-                      }`}
+                          ? "border-blue-600 ring-4 ring-blue-500/20 shadow-md scale-105"
+                          : "border-slate-200 hover:border-blue-400 hover:shadow-sm"
+                      } ${matches ? "opacity-100" : "opacity-15 pointer-events-none"}`}
                     >
                       <img
                         src={m.avatar}
@@ -568,7 +743,7 @@ export function Keanggotaan() {
                           width: size - (size > 50 ? 6 : 4),
                           height: size - (size > 50 ? 6 : 4),
                         }}
-                        className="rounded-full object-cover"
+                        className="rounded-full object-cover pointer-events-none"
                         alt={m.name}
                       />
 
@@ -576,7 +751,7 @@ export function Keanggotaan() {
                       <span className="pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2 mb-2 scale-0 group-hover:scale-100 rounded bg-slate-900/95 px-2 py-1 text-[9px] font-semibold text-white whitespace-nowrap transition-all duration-200 shadow">
                         {m.name} ({m.role})
                       </span>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
@@ -618,6 +793,12 @@ export function Keanggotaan() {
 
               {/* Stats details */}
               <div className="border-t border-slate-100 py-4 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-400 font-medium">Wilayah Anggota</span>
+                  <span className="font-bold text-slate-700 text-right text-[11px]">
+                    {selectedMember.kelurahan}, {selectedMember.kabupaten}, {selectedMember.provinsi}
+                  </span>
+                </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-400 font-medium">Kode Anggota</span>
                   <span className="font-bold text-slate-700">{selectedMember.code}</span>
