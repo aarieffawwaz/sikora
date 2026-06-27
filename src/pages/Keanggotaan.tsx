@@ -346,7 +346,7 @@ const MEMBERS: Member[] = [
   },
 ]
 
-// Spring links configuration for physics simulation
+// Graph topology links
 const LINKS = [
   { source: "m1", target: "m2" },
   { source: "m1", target: "m3" },
@@ -361,28 +361,348 @@ const LINKS = [
   { source: "m4", target: "m12" },
 ]
 
+// Dept colour palette used for node rings and SVG lines
+const DEPT_COLOR: Record<string, string> = {
+  "Pengurus Harian": "#3b82f6",
+  "Divisi Operasional": "#10b981",
+  "Divisi Keuangan": "#f59e0b",
+  "Divisi AI & Kemitraan": "#8b5cf6",
+}
+
 interface NodePhysics {
   id: string
   x: number
   y: number
   vx: number
   vy: number
-  size: number
+  r: number   // radius
 }
 
-const INITIAL_PHYSICS_NODES: Record<string, NodePhysics> = {
-  m1: { id: "m1", x: 260, y: 210, vx: 0, vy: 0, size: 72 }, // Chairman
-  m2: { id: "m2", x: 120, y: 150, vx: 0, vy: 0, size: 52 }, // Manager
-  m3: { id: "m3", x: 260, y: 70, vx: 0, vy: 0, size: 52 },  // Manager
-  m4: { id: "m4", x: 400, y: 150, vx: 0, vy: 0, size: 52 }, // Manager
-  m5: { id: "m5", x: 40, y: 80, vx: 0, vy: 0, size: 36 },
-  m6: { id: "m6", x: 30, y: 170, vx: 0, vy: 0, size: 36 },
-  m7: { id: "m7", x: 90, y: 250, vx: 0, vy: 0, size: 36 },
-  m8: { id: "m8", x: 185, y: 30, vx: 0, vy: 0, size: 36 },
-  m9: { id: "m9", x: 335, y: 30, vx: 0, vy: 0, size: 36 },
-  m10: { id: "m10", x: 430, y: 250, vx: 0, vy: 0, size: 36 },
-  m11: { id: "m11", x: 490, y: 170, vx: 0, vy: 0, size: 36 },
-  m12: { id: "m12", x: 480, y: 80, vx: 0, vy: 0, size: 36 },
+// Canvas size — matches the SVG viewBox
+const GW = 600
+const GH = 420
+
+function makeInitialNodes(): Record<string, NodePhysics> {
+  // Spread nodes in a circle so the physics settles cleanly from the start
+  const cx = GW / 2
+  const cy = GH / 2
+  const ids = MEMBERS.map((m) => m.id)
+  const radii: Record<string, number> = {
+    m1: 34, m2: 24, m3: 24, m4: 24,
+    m5: 17, m6: 17, m7: 17, m8: 17, m9: 17, m10: 17, m11: 17, m12: 17,
+  }
+  const nodes: Record<string, NodePhysics> = {}
+  ids.forEach((id, i) => {
+    const angle = (i / ids.length) * 2 * Math.PI
+    const spread = id === "m1" ? 0 : (id.length === 2 ? 130 : 230)
+    nodes[id] = {
+      id,
+      x: cx + spread * Math.cos(angle),
+      y: cy + spread * Math.sin(angle),
+      vx: 0,
+      vy: 0,
+      r: radii[id] ?? 17,
+    }
+  })
+  return nodes
+}
+
+// ---  Pure-SVG force-directed network graph component ---
+// Uses direct DOM mutation (no React state updates during animation)
+// so it achieves smooth 60fps without any React re-render overhead.
+function ForceGraph({
+  members,
+  links,
+  selectedId,
+  onSelectId,
+  filterFn,
+}: {
+  members: Member[]
+  links: typeof LINKS
+  selectedId: string
+  onSelectId: (id: string) => void
+  filterFn: (m: Member) => boolean
+}) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const nodesRef = useRef<Record<string, NodePhysics>>(makeInitialNodes())
+  const lineRefs = useRef<Record<string, SVGLineElement | null>>({})
+  const circleGroupRefs = useRef<Record<string, SVGGElement | null>>({})
+  const draggingRef = useRef<string | null>(null)
+  const selectedIdRef = useRef(selectedId)
+  const filterFnRef = useRef(filterFn)
+
+  // Keep refs in sync with props without re-triggering the animation loop
+  useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
+  useEffect(() => { filterFnRef.current = filterFn }, [filterFn])
+
+  // Reset physics when mounted
+  useEffect(() => {
+    nodesRef.current = makeInitialNodes()
+  }, [])
+
+  // Single animation loop — runs once, mutates DOM directly
+  useEffect(() => {
+    let raf: number
+
+    // Well-tuned physics constants
+    const REPEL   = 4500   // Coulomb repulsion strength
+    const SPRING  = 0.035  // Hooke spring stiffness
+    const REST    = 120    // Spring resting length
+    const GRAVITY = 0.008  // Pull toward canvas centre
+    const DAMP    = 0.78   // Velocity damping (lower = settles faster)
+    const MAX_V   = 8      // Speed cap to prevent explosions
+    const MARGIN  = 36     // Canvas edge buffer
+
+    const tick = () => {
+      const ns = nodesRef.current
+      const keys = Object.keys(ns)
+
+      // --- 1. Pairwise Coulomb repulsion ---
+      for (let i = 0; i < keys.length; i++) {
+        for (let j = i + 1; j < keys.length; j++) {
+          const a = ns[keys[i]], b = ns[keys[j]]
+          const dx = b.x - a.x
+          const dy = b.y - a.y
+          const dist2 = dx * dx + dy * dy
+          const dist  = Math.sqrt(dist2) || 0.01
+          const minD  = a.r + b.r + 20
+          if (dist < 300) {
+            const f = REPEL / (dist2 + 100)
+            const nx = dx / dist, ny = dy / dist
+            a.vx -= nx * f; a.vy -= ny * f
+            b.vx += nx * f; b.vy += ny * f
+            // Hard overlap separation
+            if (dist < minD) {
+              const push = (minD - dist) * 0.5
+              a.x -= nx * push; a.y -= ny * push
+              b.x += nx * push; b.y += ny * push
+            }
+          }
+        }
+      }
+
+      // --- 2. Hooke spring attraction along links ---
+      for (const { source, target } of links) {
+        const a = ns[source], b = ns[target]
+        if (!a || !b) continue
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01
+        const delta = dist - REST
+        const f = SPRING * delta
+        const nx = dx / dist, ny = dy / dist
+        a.vx += nx * f; a.vy += ny * f
+        b.vx -= nx * f; b.vy -= ny * f
+      }
+
+      // --- 3. Gravity pull to canvas centre ---
+      const cx = GW / 2, cy = GH / 2
+      for (const k of keys) {
+        const n = ns[k]
+        n.vx += (cx - n.x) * GRAVITY
+        n.vy += (cy - n.y) * GRAVITY
+      }
+
+      // --- 4. Integrate + clamp ---
+      for (const k of keys) {
+        const n = ns[k]
+        if (k === draggingRef.current) continue
+        // Clamp velocity
+        const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy)
+        if (speed > MAX_V) { n.vx = (n.vx / speed) * MAX_V; n.vy = (n.vy / speed) * MAX_V }
+        n.x += n.vx; n.y += n.vy
+        n.vx *= DAMP;  n.vy *= DAMP
+        // Boundary bounce
+        const lo = MARGIN + n.r, hiX = GW - MARGIN - n.r, hiY = GH - MARGIN - n.r
+        if (n.x < lo)  { n.x = lo;  n.vx =  Math.abs(n.vx) * 0.4 }
+        if (n.x > hiX) { n.x = hiX; n.vx = -Math.abs(n.vx) * 0.4 }
+        if (n.y < lo)  { n.y = lo;  n.vy =  Math.abs(n.vy) * 0.4 }
+        if (n.y > hiY) { n.y = hiY; n.vy = -Math.abs(n.vy) * 0.4 }
+      }
+
+      // --- 5. Direct DOM mutation — ZERO React state updates ---
+      // Update SVG lines
+      for (const { source, target } of links) {
+        const el = lineRefs.current[`${source}-${target}`]
+        if (!el) continue
+        const a = ns[source], b = ns[target]
+        el.setAttribute("x1", String(a.x))
+        el.setAttribute("y1", String(a.y))
+        el.setAttribute("x2", String(b.x))
+        el.setAttribute("y2", String(b.y))
+      }
+      // Update node group positions
+      for (const k of keys) {
+        const g = circleGroupRefs.current[k]
+        if (!g) continue
+        g.setAttribute("transform", `translate(${ns[k].x},${ns[k].y})`)
+      }
+
+      raf = requestAnimationFrame(tick)
+    }
+
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [links])
+
+  // Drag handlers (pointer events on the SVG element itself)
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    const target = e.target as SVGElement
+    const gEl = target.closest<SVGGElement>("[data-node-id]")
+    if (!gEl) return
+    const id = gEl.dataset.nodeId!
+    draggingRef.current = id
+    onSelectId(id)
+    ;(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!draggingRef.current || !svgRef.current) return
+    const rect = svgRef.current.getBoundingClientRect()
+    const scaleX = GW / rect.width
+    const scaleY = GH / rect.height
+    const n = nodesRef.current[draggingRef.current]
+    if (!n) return
+    n.x = Math.max(n.r + 4, Math.min(GW - n.r - 4, (e.clientX - rect.left) * scaleX))
+    n.y = Math.max(n.r + 4, Math.min(GH - n.r - 4, (e.clientY - rect.top)  * scaleY))
+    n.vx = 0; n.vy = 0
+  }
+
+  const handlePointerUp = () => { draggingRef.current = null }
+
+  const memberMap = Object.fromEntries(members.map((m) => [m.id, m]))
+
+  return (
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${GW} ${GH}`}
+      className="w-full h-full"
+      style={{ touchAction: "none", cursor: draggingRef.current ? "grabbing" : "grab" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
+      <defs>
+        {/* Radial glow filter */}
+        <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id="glow-strong" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="7" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        {/* Subtle background dots grid */}
+        <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+          <circle cx="2" cy="2" r="1" fill="#e2e8f0" />
+        </pattern>
+        {/* Gradient defs for links */}
+        {links.map(({ source, target }) => {
+          const sm = memberMap[source], tm = memberMap[target]
+          if (!sm || !tm) return null
+          const id = `lg-${source}-${target}`
+          return (
+            <linearGradient key={id} id={id} gradientUnits="userSpaceOnUse"
+              x1={nodesRef.current[source]?.x ?? 0} y1={nodesRef.current[source]?.y ?? 0}
+              x2={nodesRef.current[target]?.x ?? 0} y2={nodesRef.current[target]?.y ?? 0}
+            >
+              <stop offset="0%"  stopColor={DEPT_COLOR[sm.dept] ?? "#94a3b8"} stopOpacity="0.7" />
+              <stop offset="100%" stopColor={DEPT_COLOR[tm.dept] ?? "#94a3b8"} stopOpacity="0.35" />
+            </linearGradient>
+          )
+        })}
+      </defs>
+
+      {/* Background grid */}
+      <rect width={GW} height={GH} fill="url(#dots)" rx="16" opacity="0.5" />
+
+      {/* Subtle concentric rings from centre */}
+      {[80, 160, 250].map((r) => (
+        <circle key={r} cx={GW / 2} cy={GH / 2} r={r}
+          fill="none" stroke="#e2e8f0" strokeWidth="1" opacity="0.5" strokeDasharray="4 6" />
+      ))}
+
+      {/* Links — refs updated directly by physics loop */}
+      {links.map(({ source, target }) => {
+        const sm = memberMap[source]
+        if (!sm) return null
+        const matchesBoth = filterFnRef.current(sm) && filterFnRef.current(memberMap[target])
+        const initA = nodesRef.current[source]
+        const initB = nodesRef.current[target]
+        const isMajor = source === "m1"
+        return (
+          <line
+            key={`${source}-${target}`}
+            ref={(el) => { lineRefs.current[`${source}-${target}`] = el }}
+            x1={initA?.x ?? GW / 2} y1={initA?.y ?? GH / 2}
+            x2={initB?.x ?? GW / 2} y2={initB?.y ?? GH / 2}
+            stroke={`url(#lg-${source}-${target})`}
+            strokeWidth={isMajor ? 2.5 : 1.5}
+            strokeLinecap="round"
+            opacity={matchesBoth ? (isMajor ? 0.9 : 0.65) : 0.1}
+            style={{ transition: "opacity 0.3s" }}
+          />
+        )
+      })}
+
+      {/* Nodes — each is an SVG <g> whose transform is mutated directly */}
+      {members.map((m) => {
+        const initN = nodesRef.current[m.id]
+        const isSelected = m.id === selectedIdRef.current
+        const matches = filterFnRef.current(m)
+        const color = DEPT_COLOR[m.dept] ?? "#94a3b8"
+        const r = initN?.r ?? 17
+        const fontSize = r > 25 ? 9 : 7.5
+
+        return (
+          <g
+            key={m.id}
+            ref={(el) => { circleGroupRefs.current[m.id] = el }}
+            data-node-id={m.id}
+            transform={`translate(${initN?.x ?? GW / 2},${initN?.y ?? GH / 2})`}
+            style={{ cursor: "grab", opacity: matches ? 1 : 0.12, transition: "opacity 0.3s" }}
+          >
+            {/* Outer glow ring for selected */}
+            {isSelected && (
+              <circle r={r + 10} fill={color} opacity={0.18} filter="url(#glow-strong)" />
+            )}
+            {/* Department colour aura */}
+            <circle r={r + 4} fill={color} opacity={matches ? 0.15 : 0.04} />
+            {/* Department ring */}
+            <circle r={r + 2} fill="none" stroke={color}
+              strokeWidth={isSelected ? 2.5 : 1.5}
+              opacity={matches ? 0.8 : 0.2}
+              filter={isSelected ? "url(#glow)" : undefined}
+            />
+            {/* White avatar bg */}
+            <circle r={r} fill="white" stroke="#e2e8f0" strokeWidth="1" />
+            {/* Clip avatar image */}
+            <clipPath id={`clip-${m.id}`}><circle r={r - 2} /></clipPath>
+            <image
+              href={m.avatar}
+              x={-(r - 2)} y={-(r - 2)}
+              width={(r - 2) * 2} height={(r - 2) * 2}
+              clipPath={`url(#clip-${m.id})`}
+              preserveAspectRatio="xMidYMid slice"
+              style={{ pointerEvents: "none" }}
+            />
+            {/* Name label below node */}
+            <text
+              y={r + 13}
+              textAnchor="middle"
+              fontSize={fontSize}
+              fontWeight={isSelected ? "800" : "600"}
+              fill={isSelected ? "#1e40af" : "#475569"}
+              style={{ pointerEvents: "none", userSelect: "none", letterSpacing: "0.01em" }}
+            >
+              {m.name.split(" ")[0]}
+            </text>
+          </g>
+        )
+      })}
+    </svg>
+  )
 }
 
 export function Keanggotaan() {
@@ -394,122 +714,6 @@ export function Keanggotaan() {
   const [selectedProvinsi, setSelectedProvinsi] = useState("Semua")
   const [selectedKabupaten, setSelectedKabupaten] = useState("Semua")
   const [selectedKelurahan, setSelectedKelurahan] = useState("Semua")
-
-  // Drag and Physics state refs (using refs to guarantee smooth 60 FPS animation loop updates)
-  const nodesRef = useRef<Record<string, NodePhysics>>(JSON.parse(JSON.stringify(INITIAL_PHYSICS_NODES)))
-  const [positions, setPositions] = useState<Record<string, { x: number; y: number; size: number }>>({})
-  
-  const draggingIdRef = useRef<string | null>(null)
-  const dragTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // Force-directed layout physics solver tick loop
-  useEffect(() => {
-    if (viewMode !== "network") return
-
-    let animFrameId: number
-    const kRepel = 700      // Node repulsion constant
-    const kSpring = 0.05    // Hooke's spring constant
-    const rLength = 100     // Spring resting length
-    const kGravity = 0.015  // Pull to center force
-    const damping = 0.84    // Damping factor to slow down nodes
-    const cx = 260
-    const cy = 200
-
-    const tick = () => {
-      const keys = Object.keys(nodesRef.current)
-      
-      // 1. Repulsion force calculation (Coulomb's Law)
-      for (let i = 0; i < keys.length; i++) {
-        const n1 = nodesRef.current[keys[i]]
-        for (let j = i + 1; j < keys.length; j++) {
-          const n2 = nodesRef.current[keys[j]]
-          const dx = n2.x - n1.x
-          const dy = n2.y - n1.y
-          const distSqr = dx * dx + dy * dy + 1e-4
-          const dist = Math.sqrt(distSqr)
-          if (dist < 220) {
-            const force = kRepel / distSqr
-            const fx = (dx / dist) * force
-            const fy = (dy / dist) * force
-            n1.vx -= fx
-            n1.vy -= fy
-            n2.vx += fx
-            n2.vy += fy
-          }
-        }
-      }
-
-      // 2. Attraction force calculation (Hooke's Law springs)
-      for (const link of LINKS) {
-        const n1 = nodesRef.current[link.source]
-        const n2 = nodesRef.current[link.target]
-        if (!n1 || !n2) continue
-        const dx = n2.x - n1.x
-        const dy = n2.y - n1.y
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1e-4
-        const delta = dist - rLength
-        const force = delta * kSpring
-        const fx = (dx / dist) * force
-        const fy = (dy / dist) * force
-        n1.vx += fx
-        n1.vy += fy
-        n2.vx -= fx
-        n2.vy -= fy
-      }
-
-      // 3. Gravity center pull
-      for (const key of keys) {
-        const n = nodesRef.current[key]
-        const dx = cx - n.x
-        const dy = cy - n.y
-        n.vx += dx * kGravity
-        n.vy += dy * kGravity
-      }
-
-      // 4. Update coordinates & boundaries
-      for (const key of keys) {
-        const n = nodesRef.current[key]
-        
-        if (key === draggingIdRef.current) {
-          n.x = dragTargetRef.current.x
-          n.y = dragTargetRef.current.y
-          n.vx = 0
-          n.vy = 0
-        } else {
-          n.x += n.vx
-          n.y += n.vy
-          n.vx *= damping
-          n.vy *= damping
-          
-          // Container bounds constraints
-          n.x = Math.max(30, Math.min(490, n.x))
-          n.y = Math.max(30, Math.min(370, n.y))
-        }
-      }
-
-      // 5. Synchronize physics coordinates back to React render state
-      const nextPositions: Record<string, { x: number; y: number; size: number }> = {}
-      for (const key of keys) {
-        nextPositions[key] = {
-          x: nodesRef.current[key].x,
-          y: nodesRef.current[key].y,
-          size: nodesRef.current[key].size,
-        }
-      }
-      setPositions(nextPositions)
-
-      animFrameId = requestAnimationFrame(tick)
-    }
-
-    animFrameId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(animFrameId)
-  }, [viewMode])
-
-  // Reset node coordinates to center/default on view swaps
-  useEffect(() => {
-    nodesRef.current = JSON.parse(JSON.stringify(INITIAL_PHYSICS_NODES))
-  }, [viewMode])
 
   // Cascading Location options
   const kabupatenOptions = selectedProvinsi === "Semua"
@@ -555,37 +759,6 @@ export function Keanggotaan() {
 
   const handleContact = (name: string) => {
     toast.success(`Menghubungi ${name}... Pesan Whatsapp berhasil dikirim via SIKORA Gateway.`)
-  }
-
-  // Draggable node graph drag-start, drag-move, and drag-end mouse handlers
-  const handleNodeMouseDown = (e: React.MouseEvent, id: string) => {
-    e.preventDefault()
-    draggingIdRef.current = id
-    setSelectedId(id)
-
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (rect) {
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-      dragTargetRef.current = { x: mouseX, y: mouseY }
-    }
-  }
-
-  const handleContainerMouseMove = (e: React.MouseEvent) => {
-    if (!draggingIdRef.current || !containerRef.current) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-
-    // Keep dragging coordinates locked to center pointer
-    dragTargetRef.current = {
-      x: Math.max(30, Math.min(rect.width - 30, mouseX)),
-      y: Math.max(30, Math.min(rect.height - 30, mouseY)),
-    }
-  }
-
-  const handleContainerMouseUp = () => {
-    draggingIdRef.current = null
   }
 
   return (
@@ -790,119 +963,27 @@ export function Keanggotaan() {
               </div>
             </div>
           ) : (
-            /* --- OBSIDIAN-STYLE DYNAMIC PHYSICS-BASED NETWORK VIEW --- */
-            <div
-              ref={containerRef}
-              onMouseMove={handleContainerMouseMove}
-              onMouseUp={handleContainerMouseUp}
-              onMouseLeave={handleContainerMouseUp}
-              className="flex-1 flex items-center justify-center p-4 overflow-hidden relative select-none min-h-[460px] cursor-grab active:cursor-grabbing bg-slate-50/20 rounded-2xl"
-            >
-              {/* Radial background grid rings */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
-                <div className="border border-slate-900 rounded-full w-[240px] h-[240px] absolute" />
-                <div className="border border-slate-900 rounded-full w-[440px] h-[440px] absolute" />
-                <div className="border border-slate-900 rounded-full w-[600px] h-[600px] absolute" />
+            /* --- SMOOTH PHYSICS-BASED SVG NODE GRAPH --- */
+            <div className="flex-1 relative rounded-2xl overflow-hidden bg-slate-50/30 border border-slate-100" style={{ minHeight: 420 }}>
+              <ForceGraph
+                members={MEMBERS}
+                links={LINKS}
+                selectedId={selectedId}
+                onSelectId={setSelectedId}
+                filterFn={isMemberMatchingFilters}
+              />
+              {/* Department legend */}
+              <div className="absolute bottom-3 left-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] font-bold text-slate-500 pointer-events-none">
+                {Object.entries(DEPT_COLOR).map(([dept, color]) => (
+                  <span key={dept} className="flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-full" style={{ backgroundColor: color }} />
+                    {dept.replace("Divisi ", "")}
+                  </span>
+                ))}
               </div>
-
-              {/* Obsidian Graph Interactive SVG Lines */}
-              <div className="relative w-[520px] h-[320px] pointer-events-none">
-                <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                  {/* Lines between Budi (m1) and Managers */}
-                  {positions.m1 && positions.m2 && (
-                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m2.x} y2={positions.m2.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[1]) ? 0.8 : 0.15} />
-                  )}
-                  {positions.m1 && positions.m3 && (
-                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m3.x} y2={positions.m3.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[2]) ? 0.8 : 0.15} />
-                  )}
-                  {positions.m1 && positions.m4 && (
-                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m4.x} y2={positions.m4.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[3]) ? 0.8 : 0.15} />
-                  )}
-
-                  {/* Lines from Managers to Subordinates */}
-                  {/* Ahmad's (m2) Subordinates */}
-                  {positions.m2 && positions.m5 && (
-                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m5.x} y2={positions.m5.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[4]) ? 0.7 : 0.1} />
-                  )}
-                  {positions.m2 && positions.m6 && (
-                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m6.x} y2={positions.m6.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[5]) ? 0.7 : 0.1} />
-                  )}
-                  {positions.m2 && positions.m7 && (
-                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m7.x} y2={positions.m7.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[6]) ? 0.7 : 0.1} />
-                  )}
-
-                  {/* Siti's (m3) Subordinates */}
-                  {positions.m3 && positions.m8 && (
-                    <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m8.x} y2={positions.m8.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[7]) ? 0.7 : 0.1} />
-                  )}
-                  {positions.m3 && positions.m9 && (
-                    <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m9.x} y2={positions.m9.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[8]) ? 0.7 : 0.1} />
-                  )}
-
-                  {/* Dewi's (m4) Subordinates */}
-                  {positions.m4 && positions.m10 && (
-                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m10.x} y2={positions.m10.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[9]) ? 0.7 : 0.1} />
-                  )}
-                  {positions.m4 && positions.m11 && (
-                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m11.x} y2={positions.m11.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[10]) ? 0.7 : 0.1} />
-                  )}
-                  {positions.m4 && positions.m12 && (
-                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m12.x} y2={positions.m12.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[11]) ? 0.7 : 0.1} />
-                  )}
-                </svg>
-
-                {/* Profile Nodes */}
-                {MEMBERS.map((m) => {
-                  const pos = positions[m.id]
-                  if (!pos) return null
-
-                  const isSelected = selectedId === m.id
-                  const size = pos.size
-                  const matches = isMemberMatchingFilters(m)
-
-                  return (
-                    <div
-                      key={m.id}
-                      onMouseDown={(e) => handleNodeMouseDown(e, m.id)}
-                      style={{
-                        position: "absolute",
-                        left: pos.x,
-                        top: pos.y,
-                        width: size,
-                        height: size,
-                        transform: "translate(-50%, -50%)",
-                      }}
-                      className={`group pointer-events-auto flex items-center justify-center rounded-full bg-white transition-shadow duration-200 select-none border cursor-grab active:cursor-grabbing ${
-                        isSelected
-                          ? "border-blue-600 ring-4 ring-blue-500/20 shadow-md scale-105"
-                          : "border-slate-200 hover:border-blue-400 hover:shadow-sm"
-                      } ${matches ? "opacity-100 animate-pulse-once" : "opacity-15 pointer-events-none"}`}
-                    >
-                      <img
-                        src={m.avatar}
-                        style={{
-                          width: size - (size > 50 ? 6 : 4),
-                          height: size - (size > 50 ? 6 : 4),
-                        }}
-                        className="rounded-full object-cover pointer-events-none"
-                        alt={m.name}
-                      />
-
-                      {/* Tooltip on hover */}
-                      <span className="pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2 mb-2 scale-0 group-hover:scale-100 rounded bg-slate-900/95 px-2 py-1 text-[9px] font-semibold text-white whitespace-nowrap transition-all duration-200 shadow">
-                        {m.name} ({m.role})
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Department Guide labels */}
-              <div className="absolute bottom-2 left-4 flex gap-4 text-[10px] font-bold text-slate-400">
-                <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-blue-500" /> Pengurus</span>
-                <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-emerald-500" /> Operasional</span>
-                <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-amber-500" /> Keuangan</span>
-                <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-purple-500" /> AI & Kemitraan</span>
+              {/* Hint */}
+              <div className="absolute top-3 right-3 text-[9.5px] font-semibold text-slate-400 pointer-events-none select-none">
+                🖱 Tarik node untuk merasakan gaya fisika
               </div>
             </div>
           )}

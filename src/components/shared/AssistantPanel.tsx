@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 import { Send, Sparkles } from "lucide-react"
 import aiBot from "@/assets/ai-bot.png"
+import profile from "@/assets/profile.jpeg"
 import { AnimatePresence, motion } from "framer-motion"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { answer, SUGGESTIONS } from "@/lib/assistant"
@@ -112,11 +113,18 @@ export function AssistantPanel({ className }: { className?: string }) {
                   key={i}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
+                  className={cn("flex items-end gap-2", m.role === "user" ? "justify-end" : "justify-start")}
                 >
+                  {m.role === "user" && (
+                    <img
+                      src={profile}
+                      alt="Admin Koperasi"
+                      className="size-6 shrink-0 rounded-full object-cover ring-1 ring-slate-200 order-last"
+                    />
+                  )}
                   <div
                     className={cn(
-                      "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
+                      "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm",
                       m.role === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-white text-slate-700 ring-1 ring-slate-100",
