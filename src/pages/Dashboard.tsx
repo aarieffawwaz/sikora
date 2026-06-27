@@ -105,7 +105,7 @@ export function Dashboard() {
           >
             <OperationsMap />
           </SectionCard>
-          <AssistantPanel className="min-h-[420px]" />
+          <AssistantPanel className="h-[520px]" />
         </div>
       </Reveal>
 
