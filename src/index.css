@@ -114,6 +114,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* keep the Leaflet map (and its z-1000 controls) below app chrome
+     like dropdowns/popovers that render in portals */
+  .leaflet-container { z-index: 0; }
+
   /* sleek scrollbars */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: oklch(0.85 0.01 264); border-radius: 9999px; }
