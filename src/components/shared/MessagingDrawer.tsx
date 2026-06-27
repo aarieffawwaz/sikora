@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
+import profile from "@/assets/profile.jpeg"
 import {
   MessageSquare,
   ChevronUp,
@@ -353,7 +354,7 @@ export function MessagingDrawer() {
           <div className="flex items-center gap-2 min-w-0">
             <div className="relative shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" // Aarief avatar
+                src={profile}
                 className="size-6.5 rounded-full object-cover border border-slate-200"
                 alt="Me"
               />
