@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
 import {
-  BadgeCheck,
   Brain,
   ChevronRight,
   FileBarChart,
@@ -71,21 +70,26 @@ export function Dashboard() {
 
       {/* Status bar */}
       <Reveal delay={0.05}>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-slate-100 bg-card px-5 py-3.5 text-sm shadow-sm">
-          <span className="flex items-center gap-2 font-semibold text-emerald-600">
-            <BadgeCheck className="size-5" /> Semua sistem berjalan normal
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-emerald-100/50 bg-emerald-50/20 px-5 py-3 text-sm shadow-sm">
+          <span className="flex items-center gap-2 font-semibold text-emerald-700">
+            <svg className="size-5 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M9 11l2 2 4-4" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Semua sistem berjalan normal
           </span>
-          <span className="flex items-center gap-2 text-slate-500">
-            <span className="size-1.5 rounded-full bg-slate-300" /> Sinkronisasi Simkopdes aktif
+          <span className="text-slate-300 hidden md:inline">•</span>
+          <span className="text-slate-600">Sinkronisasi Simkopdes aktif</span>
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-600">
+            AI memperbarui <span className="font-bold text-slate-800">23</span> rekomendasi stok
           </span>
-          <span className="flex items-center gap-2 text-slate-500">
-            <span className="size-1.5 rounded-full bg-slate-300" /> AI memperbarui {aiCount} rekomendasi stok
+          <span className="text-slate-300">•</span>
+          <span className="text-slate-600">
+            <span className="font-bold text-slate-800">4</span> transaksi offline berhasil disinkronkan
           </span>
-          <span className="flex items-center gap-2 text-slate-500">
-            <span className="size-1.5 rounded-full bg-slate-300" /> Transaksi offline tersinkron
-          </span>
-          <Link to="/monitoring" className="ml-auto flex items-center gap-1 font-semibold text-primary">
-            Lihat Detail <ChevronRight className="size-4" />
+          <Link to="/monitoring" className="ml-auto flex items-center gap-1 font-bold text-primary">
+            Lihat Detail <ChevronRight className="size-4 stroke-[2.5]" />
           </Link>
         </div>
       </Reveal>
