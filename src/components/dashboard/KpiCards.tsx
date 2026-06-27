@@ -64,17 +64,13 @@ export function KpiCards() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
       {cards.map((c) => (
-        <div key={c.label} className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-card px-4 py-3.5 shadow-sm min-h-[140px]">
+        <div key={c.label} className="flex flex-col justify-between rounded-2xl border border-slate-100 bg-card px-4 py-3 shadow-sm">
           <div className="flex items-start gap-3">
             <IconChip icon={c.icon} tone={c.tone} variant="solid" />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-slate-500">{c.label}</p>
               <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">{c.value}</p>
-              {c.sub ? (
-                <p className="text-xs font-medium text-slate-500 mt-0.5">{c.sub}</p>
-              ) : (
-                <p className="text-xs font-medium text-transparent mt-0.5 select-none">&nbsp;</p>
-              )}
+              {c.sub && <p className="text-xs font-medium text-slate-500 mt-0.5">{c.sub}</p>}
             </div>
           </div>
           <div className="mt-3 flex items-end justify-between gap-1">
