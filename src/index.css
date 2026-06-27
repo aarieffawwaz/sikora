@@ -32,7 +32,7 @@
   --ring: oklch(0.546 0.215 262.8);
 
   /* SIKORA brand + semantic */
-  --sidebar: oklch(0.21 0.05 264);
+  --sidebar: #05152e;
   --sidebar-foreground: oklch(0.93 0.01 264);
   --sidebar-primary: oklch(0.546 0.215 262.8);
   --sidebar-primary-foreground: oklch(0.985 0 0);

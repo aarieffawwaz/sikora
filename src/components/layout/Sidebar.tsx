@@ -37,7 +37,7 @@ export function Sidebar() {
       )}
     >
       {/* Logo */}
-      <div className="px-5 pb-3 pt-6">
+      <div className="px-5 pt-3 pb-1">
         <img src={logo} alt="SIKORA — Sinergi Koperasi Raya" className="w-44 object-contain" />
       </div>
 

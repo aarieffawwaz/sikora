@@ -66,7 +66,7 @@ export function OperationsMap({ className }: { className?: string }) {
   const total = PROVINCES.reduce((s, p) => s + p.koperasi, 0)
 
   return (
-    <div className={cn("relative h-[320px] overflow-hidden rounded-xl", className)}>
+    <div className={cn("relative h-[420px] overflow-hidden rounded-xl", className)}>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
