@@ -11,6 +11,7 @@ import { IconChip } from "@/components/shared/IconChip"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { CountUp } from "@/components/shared/CountUp"
 
 const STEPS = ["Menghubungkan ke Simkopdes", "Menarik profil koperasi", "Menarik data gerai", "Sinkronisasi selesai"]
 const GERAI_STATUS_LABEL: Record<string, { label: string; cls: string }> = {
@@ -51,9 +52,9 @@ export function Sinkronisasi() {
 
   const stats = [
     { icon: Building2, tone: "blue" as const, label: "Profil Koperasi", value: coop.name },
-    { icon: Users, tone: "green" as const, label: "Jumlah Anggota", value: `${coop.memberCount} anggota` },
-    { icon: Store, tone: "amber" as const, label: "Total Gerai", value: `${coop.geraiCount} gerai` },
-    { icon: Database, tone: "purple" as const, label: "Produk Tersinkron", value: `${products.length} produk` },
+    { icon: Users, tone: "green" as const, label: "Jumlah Anggota", numericValue: coop.memberCount, suffix: " anggota" },
+    { icon: Store, tone: "amber" as const, label: "Total Gerai", numericValue: coop.geraiCount, suffix: " gerai" },
+    { icon: Database, tone: "purple" as const, label: "Produk Tersinkron", numericValue: products.length, suffix: " produk" },
   ]
 
   return (
@@ -106,7 +107,13 @@ export function Sinkronisasi() {
             <motion.div key={s.label} layout className="rounded-2xl border border-slate-100 bg-card p-4 shadow-sm">
               <IconChip icon={s.icon} tone={s.tone} />
               <p className="mt-3 text-xs text-slate-500">{s.label}</p>
-              <p className="text-sm font-semibold text-slate-800">{s.value}</p>
+              <p className="text-sm font-semibold text-slate-800">
+                {s.numericValue !== undefined ? (
+                  <CountUp value={s.numericValue} format={(n) => `${Math.round(n)}${s.suffix}`} />
+                ) : (
+                  s.value
+                )}
+              </p>
             </motion.div>
           ))}
         </div>

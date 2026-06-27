@@ -1,6 +1,7 @@
 import { Archive, Brain, RefreshCw, ShoppingCart, Wallet, Sparkles, Clock } from "lucide-react"
 import { IconChip, type ChipTone } from "@/components/shared/IconChip"
 import { Sparkline } from "@/components/shared/Sparkline"
+import { CountUp } from "@/components/shared/CountUp"
 
 const TREND: Record<ChipTone, string> = {
   blue: "#2563eb",
@@ -18,7 +19,8 @@ export function KpiCards() {
       icon: Archive,
       tone: "blue" as ChipTone,
       label: "Nilai Persediaan",
-      value: "Rp 2,48 M",
+      numericValue: 2.48,
+      formatValue: (n: number) => `Rp ${n.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} M`,
       trend: "12,6%",
       delta: "dari periode lalu",
       spark: [2.1, 2.2, 2.15, 2.3, 2.28, 2.4, 2.48],
@@ -27,7 +29,8 @@ export function KpiCards() {
       icon: ShoppingCart,
       tone: "green" as ChipTone,
       label: "Transaksi Hari Ini",
-      value: "1.248",
+      numericValue: 1248,
+      formatValue: (n: number) => Math.round(n).toLocaleString("id-ID"),
       trend: "15,2%",
       delta: "dari kemarin",
       spark: [3, 5, 4, 6, 5, 8, 9],
@@ -36,7 +39,8 @@ export function KpiCards() {
       icon: Wallet,
       tone: "amber" as ChipTone,
       label: "Kas Hari Ini",
-      value: "Rp 18,5 Jt",
+      numericValue: 18.5,
+      formatValue: (n: number) => `Rp ${n.toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Jt`,
       trend: "9,8%",
       delta: "dari kemarin",
       spark: [1, 2, 1.8, 2.4, 2.2, 3, 3.4],
@@ -45,7 +49,8 @@ export function KpiCards() {
       icon: Brain,
       tone: "purple" as ChipTone,
       label: "AI Prediksi",
-      value: "23 Produk",
+      numericValue: 23,
+      formatValue: (n: number) => `${Math.round(n)} Produk`,
       delta: "Update hari ini",
       isPill: true,
       spark: [2, 3, 2.5, 4, 3.5, 5, 4.5],
@@ -54,7 +59,8 @@ export function KpiCards() {
       icon: RefreshCw,
       tone: "orange" as ChipTone,
       label: "Sinkronisasi Simkopdes",
-      value: "100% Sinkron",
+      numericValue: 100,
+      formatValue: (n: number) => `${Math.round(n)}% Sinkron`,
       delta: "Update 2 menit lalu",
       spark: [4, 5, 4.5, 6, 5.5, 7, 8],
     },
@@ -68,7 +74,9 @@ export function KpiCards() {
             <IconChip icon={c.icon} tone={c.tone} variant="solid" />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-slate-500">{c.label}</p>
-              <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">{c.value}</p>
+              <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">
+                <CountUp value={c.numericValue} format={c.formatValue} />
+              </p>
             </div>
           </div>
           <div className="mt-3 flex items-end justify-between gap-1">

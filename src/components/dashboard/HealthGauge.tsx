@@ -1,6 +1,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { healthScore } from "@/lib/dashboard"
+import { CountUp } from "@/components/shared/CountUp"
 
 const COLORS = ["#2563eb", "#10b981", "#8b5cf6", "#f59e0b"]
 
@@ -37,7 +38,9 @@ export function HealthGauge() {
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold text-slate-900">{score}</span>
+          <span className="text-3xl font-bold text-slate-900">
+            <CountUp value={score} />
+          </span>
           <span className="text-xs font-medium text-emerald-600">Baik</span>
         </div>
       </div>

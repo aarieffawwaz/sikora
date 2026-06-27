@@ -25,6 +25,7 @@ import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
 import { AssistantPanel } from "@/components/shared/AssistantPanel"
+import { CountUp } from "@/components/shared/CountUp"
 import { OperationsMap, MapFilterDropdown } from "@/components/shared/OperationsMap"
 import { KpiCards } from "@/components/dashboard/KpiCards"
 import { ActivityChart } from "@/components/dashboard/ActivityChart"
@@ -199,7 +200,9 @@ export function Dashboard() {
                     <s.icon className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-2xl font-bold leading-tight text-slate-900">{s.value}</p>
+                    <p className="text-2xl font-bold leading-tight text-slate-900">
+                      <CountUp value={s.value} />
+                    </p>
                     <p className="text-[11.5px] font-medium text-slate-400 mt-0.5">{s.label}</p>
                     <p className="mt-1 flex items-center gap-1 text-[10px] font-bold text-emerald-600">
                       <span className="text-xs">↑</span> {s.delta}

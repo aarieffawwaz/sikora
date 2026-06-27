@@ -9,6 +9,7 @@ import { RestockPriority } from "@/components/dashboard/RestockPriority"
 import { HealthGauge } from "@/components/dashboard/HealthGauge"
 import { GeraiSyncList } from "@/components/dashboard/GeraiSyncList"
 import { IconChip, type ChipTone } from "@/components/shared/IconChip"
+import { CountUp } from "@/components/shared/CountUp"
 
 export function Monitoring() {
   const products = useSikoraStore((s) => s.products)
@@ -21,10 +22,10 @@ export function Monitoring() {
   )
 
   const stats = [
-    { label: "Segera Restock", value: `${counts.segera} Produk`, icon: AlertCircle, tone: "rose" as ChipTone, delta: "Tindakan segera diperlukan" },
-    { label: "Perlu Restock", value: `${counts.perlu} Produk`, icon: Clock, tone: "amber" as ChipTone, delta: "Perlu pengawasan stok" },
-    { label: "Stok Aman", value: `${counts.aman} Produk`, icon: CheckCircle2, tone: "emerald" as ChipTone, delta: "Kondisi stabil & aman" },
-    { label: "Overstock", value: `${counts.overstock} Produk`, icon: ShieldAlert, tone: "orange" as ChipTone, delta: "Optimalisasi pengadaan" },
+    { label: "Segera Restock", numericValue: counts.segera, suffix: " Produk", icon: AlertCircle, tone: "rose" as ChipTone, delta: "Tindakan segera diperlukan" },
+    { label: "Perlu Restock", numericValue: counts.perlu, suffix: " Produk", icon: Clock, tone: "amber" as ChipTone, delta: "Perlu pengawasan stok" },
+    { label: "Stok Aman", numericValue: counts.aman, suffix: " Produk", icon: CheckCircle2, tone: "emerald" as ChipTone, delta: "Kondisi stabil & aman" },
+    { label: "Overstock", numericValue: counts.overstock, suffix: " Produk", icon: ShieldAlert, tone: "orange" as ChipTone, delta: "Optimalisasi pengadaan" },
   ]
 
   return (
@@ -39,7 +40,9 @@ export function Monitoring() {
                 <IconChip icon={s.icon} tone={s.tone} variant="solid" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium text-slate-500">{s.label}</p>
-                  <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">{s.value}</p>
+                  <p className="mt-0.5 text-xl font-bold leading-tight text-slate-900">
+                    <CountUp value={s.numericValue} format={(n) => `${Math.round(n)}${s.suffix}`} />
+                  </p>
                 </div>
               </div>
               <div className="mt-3 flex items-end justify-between gap-1">

@@ -4,6 +4,7 @@ import {
   Package,
   ShoppingCart,
   BookOpenText,
+  Users,
   BarChart3,
   Settings,
   HelpCircle,
@@ -22,6 +23,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { label: "Persediaan", path: "/persediaan", icon: Package },
   { label: "Transaksi POS", path: "/pos", icon: ShoppingCart },
   { label: "Pembukuan", path: "/pembukuan", icon: BookOpenText },
+  { label: "Keanggotaan", path: "/keanggotaan", icon: Users },
   { label: "Monitoring", path: "/monitoring", icon: BarChart3 },
 ]
 
