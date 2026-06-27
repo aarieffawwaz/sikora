@@ -3,7 +3,7 @@ import { recommendFor } from "@/lib/aiEngine"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
-import { OperationsMap } from "@/components/shared/OperationsMap"
+import { OperationsMap, MapFilterDropdown } from "@/components/shared/OperationsMap"
 import { RestockPriority } from "@/components/dashboard/RestockPriority"
 import { HealthGauge } from "@/components/dashboard/HealthGauge"
 
@@ -41,7 +41,7 @@ export function Monitoring() {
 
       <Reveal delay={0.05}>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <SectionCard className="lg:col-span-2" title="Peta Operasional KDKMP" subtitle="Sebaran kondisi gerai secara nasional">
+          <SectionCard className="lg:col-span-2" title="Peta Operasional KDKMP" subtitle="Sebaran kondisi gerai secara nasional" action={<MapFilterDropdown />}>
             <OperationsMap />
           </SectionCard>
           <SectionCard title="Kesehatan Operasional">

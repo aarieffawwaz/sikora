@@ -17,21 +17,12 @@ import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
 import { AssistantPanel } from "@/components/shared/AssistantPanel"
-import { OperationsMap } from "@/components/shared/OperationsMap"
+import { OperationsMap, MapFilterDropdown } from "@/components/shared/OperationsMap"
 import { KpiCards } from "@/components/dashboard/KpiCards"
 import { ActivityChart } from "@/components/dashboard/ActivityChart"
 import { HealthGauge } from "@/components/dashboard/HealthGauge"
 import { RestockPriority } from "@/components/dashboard/RestockPriority"
 import { NotificationsList } from "@/components/dashboard/NotificationsList"
-
-function Dropdown({ label }: { label: string }) {
-  return (
-    <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-      {label}
-      <ChevronRight className="size-3.5 rotate-90 text-slate-400" />
-    </button>
-  )
-}
 
 const QUICK = [
   { label: "Kasir POS", icon: ShoppingCart, to: "/pos", tone: "text-blue-600 bg-blue-50" },
@@ -41,6 +32,15 @@ const QUICK = [
   { label: "Prediksi AI", icon: Brain, to: "/persediaan", tone: "text-violet-600 bg-violet-50" },
   { label: "Laporan", icon: FileBarChart, to: "/pembukuan", tone: "text-slate-600 bg-slate-100" },
 ]
+
+function Dropdown({ label }: { label: string }) {
+  return (
+    <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
+      {label}
+      <ChevronRight className="size-3.5 rotate-90 text-slate-400" />
+    </button>
+  )
+}
 
 export function Dashboard() {
   const transactions = useSikoraStore((s) => s.transactions)
@@ -101,7 +101,7 @@ export function Dashboard() {
             className="lg:col-span-2"
             title="Peta Operasional KDKMP"
             subtitle="Monitoring persediaan, transaksi dan sinkronisasi secara real-time"
-            action={<Dropdown label="Kondisi Persediaan" />}
+            action={<MapFilterDropdown />}
           >
             <OperationsMap />
           </SectionCard>

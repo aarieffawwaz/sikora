@@ -22,17 +22,43 @@ const GEOJSON_URL =
 const DEFAULT_CENTER: [number, number] = [-2.3, 118]
 const DEFAULT_ZOOM = 4.4
 
-const BUBBLE_SIZE = 38 // uniform across all provinces
+const BUBBLE_SIZE = 28
 
-function bubbleIcon(p: Province, selected: boolean, dim: boolean) {
+function bubbleIcon(p: Province, selected: boolean, dim: boolean, filter: string) {
   const r = BUBBLE_SIZE / 2
-  const bg = selected ? "#2563eb" : "rgba(255,255,255,.82)"
-  const fg = selected ? "#fff" : "#1f2937"
+  
+  let val = p.koperasi
+  let bg = "rgba(255,255,255,0.92)"
+  let fg = "#1f2937"
+  let border = "rgba(255,255,255,0.9)"
+  
+  if (filter === "kritis") {
+    val = Math.round(p.koperasi * 0.06) + (p.koperasi % 5) || 1
+    bg = selected ? "#ef4444" : "rgba(254,226,226,0.92)"
+    fg = selected ? "#fff" : "#b91c1c"
+    border = selected ? "#fca5a5" : "#ef4444"
+  } else if (filter === "menipis") {
+    val = Math.round(p.koperasi * 0.18) + (p.koperasi % 7) || 2
+    bg = selected ? "#f59e0b" : "rgba(254,243,199,0.92)"
+    fg = selected ? "#fff" : "#b45309"
+    border = selected ? "#fcd34d" : "#f59e0b"
+  } else if (filter === "aman") {
+    val = Math.max(1, p.koperasi - Math.round(p.koperasi * 0.24))
+    bg = selected ? "#10b981" : "rgba(209,250,229,0.92)"
+    fg = selected ? "#fff" : "#047857"
+    border = selected ? "#6ee7b7" : "#10b981"
+  } else {
+    // semua
+    bg = selected ? "#2563eb" : "rgba(255,255,255,0.92)"
+    fg = selected ? "#fff" : "#1f2937"
+    border = selected ? "#93c5fd" : "rgba(255,255,255,0.9)"
+  }
+
   return L.divIcon({
     className: "",
     iconSize: [BUBBLE_SIZE, BUBBLE_SIZE],
     iconAnchor: [r, r],
-    html: `<div style="width:${BUBBLE_SIZE}px;height:${BUBBLE_SIZE}px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-size:11px;border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 8px rgba(0,0,0,.35);opacity:${dim ? 0.3 : 1};transition:opacity .3s">${p.koperasi}</div>`,
+    html: `<div style="width:${BUBBLE_SIZE}px;height:${BUBBLE_SIZE}px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-size:9.5px;border:1.5px solid ${border};box-shadow:0 1.5px 5px rgba(0,0,0,0.25);opacity:${dim ? 0.35 : 1};transition:all .3s">${val}</div>`,
   })
 }
 
@@ -50,6 +76,7 @@ export function OperationsMap({ className }: { className?: string }) {
   const [geo, setGeo] = useState<FeatureCollection | null>(null)
   const selectedId = useSikoraStore((s) => s.selectedProvinceId)
   const setProvince = useSikoraStore((s) => s.setProvince)
+  const filter = useSikoraStore((s) => s.mapFilter)
   const selected = provinceById(selectedId)
 
   useEffect(() => {
@@ -63,7 +90,14 @@ export function OperationsMap({ className }: { className?: string }) {
     }
   }, [])
 
-  const total = PROVINCES.reduce((s, p) => s + p.koperasi, 0)
+  const getVal = (p: Province) => {
+    if (filter === "kritis") return Math.round(p.koperasi * 0.06) + (p.koperasi % 5) || 1
+    if (filter === "menipis") return Math.round(p.koperasi * 0.18) + (p.koperasi % 7) || 2
+    if (filter === "aman") return Math.max(1, p.koperasi - Math.round(p.koperasi * 0.24))
+    return p.koperasi
+  }
+
+  const total = PROVINCES.reduce((s, p) => s + getVal(p), 0)
 
   return (
     <div className={cn("relative h-[420px] overflow-hidden rounded-xl", className)}>
@@ -112,13 +146,19 @@ export function OperationsMap({ className }: { className?: string }) {
           <Marker
             key={p.id}
             position={[p.lat, p.lng]}
-            icon={bubbleIcon(p, p.id === selectedId, !!selectedId && p.id !== selectedId)}
+            icon={bubbleIcon(p, p.id === selectedId, !!selectedId && p.id !== selectedId, filter)}
             eventHandlers={{ click: () => setProvince(p.id === selectedId ? null : p.id) }}
           >
             <Tooltip direction="top" offset={[0, -10]}>
               <span className="font-semibold">{p.name}</span>
               <br />
-              {angka(p.koperasi)} koperasi · {angka(p.volume)} transaksi
+              {filter === "kritis"
+                ? `${angka(getVal(p))} koperasi kritis`
+                : filter === "menipis"
+                ? `${angka(getVal(p))} koperasi menipis`
+                : filter === "aman"
+                ? `${angka(getVal(p))} koperasi aman`
+                : `${angka(p.koperasi)} koperasi`} · {angka(p.volume)} transaksi
             </Tooltip>
           </Marker>
         ))}
@@ -128,12 +168,38 @@ export function OperationsMap({ className }: { className?: string }) {
       <div className="pointer-events-none absolute bottom-4 left-4 z-[500] rounded-xl bg-slate-900/70 p-3 text-xs text-slate-100 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <span className="flex size-5 items-center justify-center rounded-full bg-white/85 text-[8px] font-bold text-slate-800">#</span>
-          Jumlah koperasi / provinsi
+          {filter === "kritis"
+            ? "Koperasi Kritis (Segera Restock)"
+            : filter === "menipis"
+            ? "Koperasi Menipis (Perlu Restock)"
+            : filter === "aman"
+            ? "Koperasi Stok Aman"
+            : "Jumlah koperasi / provinsi"}
         </div>
         <p className="mt-1 text-[11px] text-slate-300">
-          {selected ? selected.name : `Nasional: ${angka(total)} koperasi`}
+          {selected
+            ? `${selected.name}: ${angka(getVal(selected))} koperasi`
+            : `Nasional: ${angka(total)} koperasi`}
         </p>
       </div>
     </div>
+  )
+}
+
+export function MapFilterDropdown() {
+  const filter = useSikoraStore((s) => s.mapFilter)
+  const setFilter = useSikoraStore((s) => s.setMapFilter)
+
+  return (
+    <select
+      value={filter}
+      onChange={(e) => setFilter(e.target.value as any)}
+      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-colors"
+    >
+      <option value="semua">Kondisi Persediaan: Semua</option>
+      <option value="kritis">Stok Kritis (Segera Restock)</option>
+      <option value="menipis">Stok Menipis (Perlu Restock)</option>
+      <option value="aman">Stok Aman & Stabil</option>
+    </select>
   )
 }

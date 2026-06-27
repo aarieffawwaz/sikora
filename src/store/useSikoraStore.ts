@@ -33,6 +33,7 @@ interface SikoraState {
   ledger: LedgerEntry[]
   cashBalance: number
   notifications: AppNotification[]
+  mapFilter: "semua" | "kritis" | "menipis" | "aman"
 
   syncFromSimkopdes: () => void
   addStock: (productId: string, qty: number, note?: string) => void
@@ -43,6 +44,7 @@ interface SikoraState {
   setProvince: (id: string | null) => void
   pushNotification: (n: Omit<AppNotification, "id" | "at">) => void
   resetDemo: () => void
+  setMapFilter: (filter: "semua" | "kritis" | "menipis" | "aman") => void
 }
 
 function seedCash(): number {
@@ -63,6 +65,7 @@ function initial() {
     ledger: structuredClone(LEDGER),
     cashBalance: seedCash(),
     notifications: structuredClone(NOTIFICATIONS),
+    mapFilter: "semua" as const,
   }
 }
 
@@ -210,6 +213,8 @@ export const useSikoraStore = create<SikoraState>()(
         })),
 
       resetDemo: () => set({ ...initial() }),
+
+      setMapFilter: (filter) => set({ mapFilter: filter }),
     }),
     {
       name: "sikora-store",
