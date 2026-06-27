@@ -346,20 +346,43 @@ const MEMBERS: Member[] = [
   },
 ]
 
-// Initial static coordinates for network graph
-const INITIAL_NODE_POSITIONS: Record<string, { x: number; y: number; size: number }> = {
-  m1: { x: 260, y: 210, size: 72 }, // Budi (Chairman)
-  m2: { x: 120, y: 150, size: 52 }, // Ahmad (Ops Manager)
-  m3: { x: 260, y: 70, size: 52 },  // Siti (Finance Manager)
-  m4: { x: 400, y: 150, size: 52 }, // Dewi (AI Manager)
-  m5: { x: 40, y: 80, size: 36 },   // Fajar
-  m6: { x: 30, y: 170, size: 36 },  // Sri
-  m7: { x: 90, y: 250, size: 36 },  // Bambang
-  m8: { x: 185, y: 30, size: 36 },  // Rina
-  m9: { x: 335, y: 30, size: 36 },  // Hadi
-  m10: { x: 430, y: 250, size: 36 }, // Eko
-  m11: { x: 490, y: 170, size: 36 }, // Rian
-  m12: { x: 480, y: 80, size: 36 },  // Fitriani
+// Spring links configuration for physics simulation
+const LINKS = [
+  { source: "m1", target: "m2" },
+  { source: "m1", target: "m3" },
+  { source: "m1", target: "m4" },
+  { source: "m2", target: "m5" },
+  { source: "m2", target: "m6" },
+  { source: "m2", target: "m7" },
+  { source: "m3", target: "m8" },
+  { source: "m3", target: "m9" },
+  { source: "m4", target: "m10" },
+  { source: "m4", target: "m11" },
+  { source: "m4", target: "m12" },
+]
+
+interface NodePhysics {
+  id: string
+  x: number
+  y: number
+  vx: number
+  vy: number
+  size: number
+}
+
+const INITIAL_PHYSICS_NODES: Record<string, NodePhysics> = {
+  m1: { id: "m1", x: 260, y: 210, vx: 0, vy: 0, size: 72 }, // Chairman
+  m2: { id: "m2", x: 120, y: 150, vx: 0, vy: 0, size: 52 }, // Manager
+  m3: { id: "m3", x: 260, y: 70, vx: 0, vy: 0, size: 52 },  // Manager
+  m4: { id: "m4", x: 400, y: 150, vx: 0, vy: 0, size: 52 }, // Manager
+  m5: { id: "m5", x: 40, y: 80, vx: 0, vy: 0, size: 36 },
+  m6: { id: "m6", x: 30, y: 170, vx: 0, vy: 0, size: 36 },
+  m7: { id: "m7", x: 90, y: 250, vx: 0, vy: 0, size: 36 },
+  m8: { id: "m8", x: 185, y: 30, vx: 0, vy: 0, size: 36 },
+  m9: { id: "m9", x: 335, y: 30, vx: 0, vy: 0, size: 36 },
+  m10: { id: "m10", x: 430, y: 250, vx: 0, vy: 0, size: 36 },
+  m11: { id: "m11", x: 490, y: 170, vx: 0, vy: 0, size: 36 },
+  m12: { id: "m12", x: 480, y: 80, vx: 0, vy: 0, size: 36 },
 }
 
 export function Keanggotaan() {
@@ -372,18 +395,123 @@ export function Keanggotaan() {
   const [selectedKabupaten, setSelectedKabupaten] = useState("Semua")
   const [selectedKelurahan, setSelectedKelurahan] = useState("Semua")
 
-  // Drag states for Network Graph
-  const [positions, setPositions] = useState<Record<string, { x: number; y: number; size: number }>>(INITIAL_NODE_POSITIONS)
-  const [draggingId, setDraggingId] = useState<string | null>(null)
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  // Drag and Physics state refs (using refs to guarantee smooth 60 FPS animation loop updates)
+  const nodesRef = useRef<Record<string, NodePhysics>>(JSON.parse(JSON.stringify(INITIAL_PHYSICS_NODES)))
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number; size: number }>>({})
+  
+  const draggingIdRef = useRef<string | null>(null)
+  const dragTargetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Reset drag positions if view mode changes
+  // Force-directed layout physics solver tick loop
   useEffect(() => {
-    setPositions(INITIAL_NODE_POSITIONS)
+    if (viewMode !== "network") return
+
+    let animFrameId: number
+    const kRepel = 700      // Node repulsion constant
+    const kSpring = 0.05    // Hooke's spring constant
+    const rLength = 100     // Spring resting length
+    const kGravity = 0.015  // Pull to center force
+    const damping = 0.84    // Damping factor to slow down nodes
+    const cx = 260
+    const cy = 200
+
+    const tick = () => {
+      const keys = Object.keys(nodesRef.current)
+      
+      // 1. Repulsion force calculation (Coulomb's Law)
+      for (let i = 0; i < keys.length; i++) {
+        const n1 = nodesRef.current[keys[i]]
+        for (let j = i + 1; j < keys.length; j++) {
+          const n2 = nodesRef.current[keys[j]]
+          const dx = n2.x - n1.x
+          const dy = n2.y - n1.y
+          const distSqr = dx * dx + dy * dy + 1e-4
+          const dist = Math.sqrt(distSqr)
+          if (dist < 220) {
+            const force = kRepel / distSqr
+            const fx = (dx / dist) * force
+            const fy = (dy / dist) * force
+            n1.vx -= fx
+            n1.vy -= fy
+            n2.vx += fx
+            n2.vy += fy
+          }
+        }
+      }
+
+      // 2. Attraction force calculation (Hooke's Law springs)
+      for (const link of LINKS) {
+        const n1 = nodesRef.current[link.source]
+        const n2 = nodesRef.current[link.target]
+        if (!n1 || !n2) continue
+        const dx = n2.x - n1.x
+        const dy = n2.y - n1.y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1e-4
+        const delta = dist - rLength
+        const force = delta * kSpring
+        const fx = (dx / dist) * force
+        const fy = (dy / dist) * force
+        n1.vx += fx
+        n1.vy += fy
+        n2.vx -= fx
+        n2.vy -= fy
+      }
+
+      // 3. Gravity center pull
+      for (const key of keys) {
+        const n = nodesRef.current[key]
+        const dx = cx - n.x
+        const dy = cy - n.y
+        n.vx += dx * kGravity
+        n.vy += dy * kGravity
+      }
+
+      // 4. Update coordinates & boundaries
+      for (const key of keys) {
+        const n = nodesRef.current[key]
+        
+        if (key === draggingIdRef.current) {
+          n.x = dragTargetRef.current.x
+          n.y = dragTargetRef.current.y
+          n.vx = 0
+          n.vy = 0
+        } else {
+          n.x += n.vx
+          n.y += n.vy
+          n.vx *= damping
+          n.vy *= damping
+          
+          // Container bounds constraints
+          n.x = Math.max(30, Math.min(490, n.x))
+          n.y = Math.max(30, Math.min(370, n.y))
+        }
+      }
+
+      // 5. Synchronize physics coordinates back to React render state
+      const nextPositions: Record<string, { x: number; y: number; size: number }> = {}
+      for (const key of keys) {
+        nextPositions[key] = {
+          x: nodesRef.current[key].x,
+          y: nodesRef.current[key].y,
+          size: nodesRef.current[key].size,
+        }
+      }
+      setPositions(nextPositions)
+
+      animFrameId = requestAnimationFrame(tick)
+    }
+
+    animFrameId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(animFrameId)
   }, [viewMode])
 
-  // Get cascading options
+  // Reset node coordinates to center/default on view swaps
+  useEffect(() => {
+    nodesRef.current = JSON.parse(JSON.stringify(INITIAL_PHYSICS_NODES))
+  }, [viewMode])
+
+  // Cascading Location options
   const kabupatenOptions = selectedProvinsi === "Semua"
     ? Array.from(new Set(MEMBERS.map((m) => m.kabupaten)))
     : Array.from(new Set(MEMBERS.filter((m) => m.provinsi === selectedProvinsi).map((m) => m.kabupaten)))
@@ -392,7 +520,6 @@ export function Keanggotaan() {
     ? Array.from(new Set(MEMBERS.map((m) => m.kelurahan)))
     : Array.from(new Set(MEMBERS.filter((m) => m.kabupaten === selectedKabupaten).map((m) => m.kelurahan)))
 
-  // Handle cascading reset on parent change
   const handleProvinsiChange = (prov: string) => {
     setSelectedProvinsi(prov)
     setSelectedKabupaten("Semua")
@@ -404,7 +531,6 @@ export function Keanggotaan() {
     setSelectedKelurahan("Semua")
   }
 
-  // Active status helper
   const isMemberMatchingFilters = (m: Member) => {
     if (selectedProvinsi !== "Semua" && m.provinsi !== selectedProvinsi) return false
     if (selectedKabupaten !== "Semua" && m.kabupaten !== selectedKabupaten) return false
@@ -412,7 +538,7 @@ export function Keanggotaan() {
     return true
   }
 
-  // Auto-select on search
+  // Search trigger auto-selection
   useEffect(() => {
     if (searchQuery.trim() !== "") {
       const matched = MEMBERS.find((m) =>
@@ -431,42 +557,35 @@ export function Keanggotaan() {
     toast.success(`Menghubungi ${name}... Pesan Whatsapp berhasil dikirim via SIKORA Gateway.`)
   }
 
-  // Draggable node graph mouse event handlers
+  // Draggable node graph drag-start, drag-move, and drag-end mouse handlers
   const handleNodeMouseDown = (e: React.MouseEvent, id: string) => {
     e.preventDefault()
-    setDraggingId(id)
-    const pos = positions[id]
+    draggingIdRef.current = id
+    setSelectedId(id)
+
     const rect = containerRef.current?.getBoundingClientRect()
     if (rect) {
       const mouseX = e.clientX - rect.left
       const mouseY = e.clientY - rect.top
-      setDragOffset({ x: mouseX - pos.x, y: mouseY - pos.y })
+      dragTargetRef.current = { x: mouseX, y: mouseY }
     }
-    setSelectedId(id)
   }
 
   const handleContainerMouseMove = (e: React.MouseEvent) => {
-    if (!draggingId || !containerRef.current) return
+    if (!draggingIdRef.current || !containerRef.current) return
     const rect = containerRef.current.getBoundingClientRect()
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
 
-    const newX = mouseX - dragOffset.x
-    const newY = mouseY - dragOffset.y
-
-    setPositions((prev) => ({
-      ...prev,
-      [draggingId]: {
-        ...prev[draggingId],
-        // Drag limit boundaries
-        x: Math.max(30, Math.min(rect.width - 30, newX)),
-        y: Math.max(30, Math.min(rect.height - 30, newY)),
-      },
-    }))
+    // Keep dragging coordinates locked to center pointer
+    dragTargetRef.current = {
+      x: Math.max(30, Math.min(rect.width - 30, mouseX)),
+      y: Math.max(30, Math.min(rect.height - 30, mouseY)),
+    }
   }
 
   const handleContainerMouseUp = () => {
-    setDraggingId(null)
+    draggingIdRef.current = null
   }
 
   return (
@@ -521,11 +640,11 @@ export function Keanggotaan() {
         {/* Graph Display Area */}
         <SectionCard
           className="lg:col-span-2 min-h-[600px] flex flex-col overflow-visible"
-          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola (Draggable)"}
+          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola (Physics Graph)"}
           subtitle={
             viewMode === "hierarchy"
               ? "Menampilkan jalur kepemimpinan dan penugasan divisi"
-              : "Klik dan seret (drag) foto anggota untuk menggerakkan jejaring Obsidian secara real-time"
+              : "Tarik (drag) foto anggota menggunakan mouse untuk merasakan pergerakan elastic bubble jejaring Obsidian."
           }
           action={
             /* Cascading Filter Controls */
@@ -671,7 +790,7 @@ export function Keanggotaan() {
               </div>
             </div>
           ) : (
-            /* --- OBSIDIAN-STYLE DRAGGABLE NETWORK/NODE VIEW --- */
+            /* --- OBSIDIAN-STYLE DYNAMIC PHYSICS-BASED NETWORK VIEW --- */
             <div
               ref={containerRef}
               onMouseMove={handleContainerMouseMove}
@@ -679,7 +798,7 @@ export function Keanggotaan() {
               onMouseLeave={handleContainerMouseUp}
               className="flex-1 flex items-center justify-center p-4 overflow-hidden relative select-none min-h-[460px] cursor-grab active:cursor-grabbing bg-slate-50/20 rounded-2xl"
             >
-              {/* Radial background grid */}
+              {/* Radial background grid rings */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
                 <div className="border border-slate-900 rounded-full w-[240px] h-[240px] absolute" />
                 <div className="border border-slate-900 rounded-full w-[440px] h-[440px] absolute" />
@@ -690,24 +809,46 @@ export function Keanggotaan() {
               <div className="relative w-[520px] h-[320px] pointer-events-none">
                 <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
                   {/* Lines between Budi (m1) and Managers */}
-                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m2.x} y2={positions.m2.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[1]) ? 0.8 : 0.15} />
-                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m3.x} y2={positions.m3.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[2]) ? 0.8 : 0.15} />
-                  <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m4.x} y2={positions.m4.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[3]) ? 0.8 : 0.15} />
+                  {positions.m1 && positions.m2 && (
+                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m2.x} y2={positions.m2.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[1]) ? 0.8 : 0.15} />
+                  )}
+                  {positions.m1 && positions.m3 && (
+                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m3.x} y2={positions.m3.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[2]) ? 0.8 : 0.15} />
+                  )}
+                  {positions.m1 && positions.m4 && (
+                    <line x1={positions.m1.x} y1={positions.m1.y} x2={positions.m4.x} y2={positions.m4.y} stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="3 3" opacity={isMemberMatchingFilters(MEMBERS[0]) && isMemberMatchingFilters(MEMBERS[3]) ? 0.8 : 0.15} />
+                  )}
 
                   {/* Lines from Managers to Subordinates */}
                   {/* Ahmad's (m2) Subordinates */}
-                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m5.x} y2={positions.m5.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[4]) ? 0.7 : 0.1} />
-                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m6.x} y2={positions.m6.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[5]) ? 0.7 : 0.1} />
-                  <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m7.x} y2={positions.m7.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[6]) ? 0.7 : 0.1} />
+                  {positions.m2 && positions.m5 && (
+                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m5.x} y2={positions.m5.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[4]) ? 0.7 : 0.1} />
+                  )}
+                  {positions.m2 && positions.m6 && (
+                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m6.x} y2={positions.m6.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[5]) ? 0.7 : 0.1} />
+                  )}
+                  {positions.m2 && positions.m7 && (
+                    <line x1={positions.m2.x} y1={positions.m2.y} x2={positions.m7.x} y2={positions.m7.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[1]) && isMemberMatchingFilters(MEMBERS[6]) ? 0.7 : 0.1} />
+                  )}
 
                   {/* Siti's (m3) Subordinates */}
-                  <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m8.x} y2={positions.m8.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[7]) ? 0.7 : 0.1} />
-                  <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m9.x} y2={positions.m9.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[8]) ? 0.7 : 0.1} />
+                  {positions.m3 && positions.m8 && (
+                    <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m8.x} y2={positions.m8.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[7]) ? 0.7 : 0.1} />
+                  )}
+                  {positions.m3 && positions.m9 && (
+                    <line x1={positions.m3.x} y1={positions.m3.y} x2={positions.m9.x} y2={positions.m9.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[2]) && isMemberMatchingFilters(MEMBERS[8]) ? 0.7 : 0.1} />
+                  )}
 
                   {/* Dewi's (m4) Subordinates */}
-                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m10.x} y2={positions.m10.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[9]) ? 0.7 : 0.1} />
-                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m11.x} y2={positions.m11.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[10]) ? 0.7 : 0.1} />
-                  <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m12.x} y2={positions.m12.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[11]) ? 0.7 : 0.1} />
+                  {positions.m4 && positions.m10 && (
+                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m10.x} y2={positions.m10.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[9]) ? 0.7 : 0.1} />
+                  )}
+                  {positions.m4 && positions.m11 && (
+                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m11.x} y2={positions.m11.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[10]) ? 0.7 : 0.1} />
+                  )}
+                  {positions.m4 && positions.m12 && (
+                    <line x1={positions.m4.x} y1={positions.m4.y} x2={positions.m12.x} y2={positions.m12.y} stroke="#cbd5e1" strokeWidth="1.5" opacity={isMemberMatchingFilters(MEMBERS[3]) && isMemberMatchingFilters(MEMBERS[11]) ? 0.7 : 0.1} />
+                  )}
                 </svg>
 
                 {/* Profile Nodes */}
@@ -735,7 +876,7 @@ export function Keanggotaan() {
                         isSelected
                           ? "border-blue-600 ring-4 ring-blue-500/20 shadow-md scale-105"
                           : "border-slate-200 hover:border-blue-400 hover:shadow-sm"
-                      } ${matches ? "opacity-100" : "opacity-15 pointer-events-none"}`}
+                      } ${matches ? "opacity-100 animate-pulse-once" : "opacity-15 pointer-events-none"}`}
                     >
                       <img
                         src={m.avatar}
