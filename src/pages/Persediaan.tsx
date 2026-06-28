@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { PackageMinus, PackagePlus, Sparkles } from "lucide-react"
+import { Clock, PackageMinus, PackagePlus, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { useSikoraStore } from "@/store/useSikoraStore"
-import { recommendFor } from "@/lib/aiEngine"
+import { expiryAlerts, recommendFor } from "@/lib/aiEngine"
 import { rupiah } from "@/lib/format"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
@@ -64,9 +64,22 @@ export function Persediaan() {
     setOpen(false)
   }
 
+  const expiring = expiryAlerts(products)
+
   return (
     <div className="space-y-5">
-      <PageHeader title="Persediaan & Rantai Pasok" subtitle="Kelola stok dengan rekomendasi AI Decision Support System." />
+      <PageHeader title="Persediaan" subtitle="Kelola stok dengan rekomendasi AI Decision Support System." />
+
+      {expiring.length > 0 && (
+        <Reveal>
+          <div className="flex items-center gap-2 rounded-xl border border-amber-100 bg-amber-50/60 px-4 py-2.5 text-sm text-amber-700">
+            <Clock className="size-4 shrink-0" />
+            <span>
+              {expiring.length} produk mendekati kedaluwarsa ({expiring.map((e) => e.productName).join(", ")}) — cek saran promo di Rantai Pasok.
+            </span>
+          </div>
+        </Reveal>
+      )}
 
       <Reveal>
         <div className="flex flex-wrap gap-3">

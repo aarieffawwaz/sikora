@@ -3,6 +3,7 @@ import { useSikoraStore } from "@/store/useSikoraStore"
 import { PROVINCES } from "@/data/provinces"
 import { waktuLalu } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import type { CurrentRole } from "@/lib/types"
 import profile from "@/assets/profile.jpeg"
 import {
   Select,
@@ -29,12 +30,20 @@ const NOTIF_DOT: Record<string, string> = {
   warning: "bg-rose-500",
 }
 
+const ROLE_LABEL: Record<CurrentRole, string> = {
+  pengurus: "Pengurus",
+  kasir: "Kasir",
+  crew: "Crew",
+}
+
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const notifications = useSikoraStore((s) => s.notifications)
   const resetDemo = useSikoraStore((s) => s.resetDemo)
   const selectedProvinceId = useSikoraStore((s) => s.selectedProvinceId)
   const setProvince = useSikoraStore((s) => s.setProvince)
   const toggleSidebar = useSikoraStore((s) => s.toggleSidebar)
+  const currentRole = useSikoraStore((s) => s.currentRole)
+  const setRole = useSikoraStore((s) => s.setRole)
 
   return (
     <div className="flex flex-col gap-5 pb-2">
@@ -51,6 +60,22 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 
         {/* Top-Right widgets */}
         <div className="flex items-center gap-3">
+          {/* Role switcher — cosmetic framing only, does not gate any route/feature */}
+          <div className="flex rounded-full border border-slate-200 bg-white p-1 text-xs font-medium shadow-sm">
+            {(Object.keys(ROLE_LABEL) as CurrentRole[]).map((role) => (
+              <button
+                key={role}
+                onClick={() => setRole(role)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 transition-colors",
+                  currentRole === role ? "bg-primary text-primary-foreground" : "text-slate-500 hover:bg-slate-100",
+                )}
+              >
+                {ROLE_LABEL[role]}
+              </button>
+            ))}
+          </div>
+
           {/* Region */}
           <Select
             value={selectedProvinceId ?? "all"}

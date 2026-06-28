@@ -1,8 +1,14 @@
 # SIKORA — Progress Log
 
-Recap status project per **2026-06-27/28**. Update file ini tiap sesi kerja baru biar AI/dev selanjutnya tau posisi project tanpa baca ulang seluruh git log.
+Recap status project per **2026-06-28**. Update file ini tiap sesi kerja baru biar AI/dev selanjutnya tau posisi project tanpa baca ulang seluruh git log.
 
-## Status: MVP fungsional, demo flow lengkap, sudah meluas dari scope PRD awal
+## Status: MVP fungsional, demo flow 9-step, ekspansi besar modul retail/supply-chain ala Indomaret/Alfamart/MokaPOS/Majoo/Jurnal Mekari (2026-06-28)
+
+Riset kompetitor (Indomaret/Alfamart/MokaPOS/Majoo Supplies/Jurnal Mekari) dipakai sebagai inspirasi fitur, **bukan** mandat ganti stack — semua tetap frontend-mock sesuai `PRD.md` §5 (Vite, no backend, AI rule-based, tidak ada LLM/Next.js/PostgreSQL/React Native sungguhan).
+
+Modul baru: **Rantai Pasok** (`/rantai-pasok` — Smart-PO, transfer/adjustment stok, promo & bundling AI), **Tugas Harian & Stock Opname** (`/crew` — checklist, hitung fisik stok, mock foto rak), **Manajemen Kasir/Shift** (di POS), **Loyalitas Anggota** & **Pre-Order Warga** (tab baru di Keanggotaan), **Pembukuan** diperluas jadi 5 tab termasuk Jurnal Umum/Buku Besar/Laporan Keuangan (derived dari ledger existing via `src/lib/accounting.ts`, bukan sistem akuntansi independen), role switcher kosmetik (pengurus/kasir/crew) di header.
+
+Scoping call penting: **tidak** rebuild ke multi-gerai stock terpisah (model tetap satu pool stock per produk; Transfer Stok di Rantai Pasok cuma catatan/log, bukan split stock nyata) dan **tidak** build app/device terpisah (tetap satu SPA, role switcher cuma framing kosmetik tanpa route guard).
 
 `npm run build` hijau. Dev server `npm run dev` (port 5173, ada `.claude/launch.json` utk Claude Preview tool, server name `"sikora"`).
 
@@ -15,17 +21,20 @@ Recap status project per **2026-06-27/28**. Update file ini tiap sesi kerja baru
 | `/persediaan` | Persediaan & Rantai Pasok | Selesai — tabel produk + AI rec + dialog barang masuk/keluar |
 | `/pos` | Transaksi POS | Selesai — cashier grid + cart + checkout, toggle online/offline |
 | `/pembukuan` | Pembukuan Otomatis | Selesai — ledger otomatis dari setiap sale |
-| `/keanggotaan` | Keanggotaan | Selesai (besar, ~1300 baris) — di luar PRD awal, lihat catatan di bawah |
+| `/keanggotaan` | Keanggotaan | Selesai (besar, ~1300+ baris) — di luar PRD awal + tab Loyalitas Anggota & Pre-Order Warga (baru) |
+| `/rantai-pasok` | Rantai Pasok | Baru — Smart-PO, transfer/adjustment stok, promo & bundling AI |
+| `/crew` | Tugas Harian & Stock Opname | Baru — checklist crew, stock opname, mock foto rak |
 | `/database-koperasi` | Koperasi (DatabaseKoperasi) | Selesai (~800 baris) — di luar PRD awal, lihat catatan di bawah |
 | `/monitoring` | Monitoring | Selesai — peta + kesehatan operasional + status sync gerai |
 | `/pengaturan`, `/bantuan` | Stub | Placeholder, belum dikerjakan |
 
 ## Engine inti (jangan disentuh tanpa paham — ini "jantung" app)
 
-- `src/store/useSikoraStore.ts` — single Zustand store + `persist` (localStorage key `sikora-store`). Semua modul baca/tulis sini. Sale POS → stock turun → AI rec recompute → KPI/notif update reaktif. State: `coop`, `products`, `movements`, `transactions`, `ledger`, `cashBalance`, `notifications`, `isOnline`, `selectedProvinceId`, `sidebarCollapsed`, `mapFilter`.
-- `src/lib/aiEngine.ts` — AI DSS rule-based: `coldStartVelocity()`, `effectiveVelocity()`, `severityOf()` (segera/perlu/aman/overstock), `recommendFor()`, `recommendations()`.
+- `src/store/useSikoraStore.ts` — single Zustand store + `persist` (localStorage key `sikora-store`, version 2). Semua modul baca/tulis sini. Sale POS → stock turun → AI rec recompute → KPI/notif update reaktif. State: `coop`, `products`, `movements`, `transactions`, `ledger`, `cashBalance`, `notifications`, `isOnline`, `selectedProvinceId`, `sidebarCollapsed`, `mapFilter`, + baru: `currentRole`, `activeShift`/`shifts`, `suppliers`, `purchaseOrders`, `members`, `preOrders`, `crewTasks`, `stockOpnames`, `activePromoIds`.
+- `src/lib/aiEngine.ts` — AI DSS rule-based: `coldStartVelocity()`, `effectiveVelocity()`, `severityOf()` (segera/perlu/aman/overstock), `recommendFor()`, `recommendations()`, + baru: `suggestPoItems()`, `suggestBundles()`/`bundleKey()`, `expiryAlerts()`, `isOpnameAnomaly()`, `memberTierFor()`.
+- `src/lib/accounting.ts` — **baru**, layer derived-reporting (bukan source of truth baru): `journalEntries()`, `generalLedger()`, `incomeStatement()`, `balanceSheet()` — semua dihitung dari `ledger`/`transactions`/`products` yang sudah ada, dipakai di Pembukuan tab Jurnal Umum/Buku Besar/Laporan Keuangan.
 - `src/lib/assistant.ts` — scripted AI Assistant, intent-match pertanyaan demo → jawaban interpolasi data store live (bukan LLM call).
-- `src/data/seed.ts` — data demo: koperasi, 10 produk (Beras Premium dst., tuned biar Beras=segera/Gula=perlu/Telur=aman), transaksi awal, ledger, notifikasi.
+- `src/data/seed.ts` — data demo: koperasi, 10 produk (Beras Premium dst., tuned biar Beras=segera/Gula=perlu/Telur=aman, + `supplierId`/`expiryDate`), transaksi awal, ledger, notifikasi, + baru: `SUPPLIERS`, `PURCHASE_ORDERS`, `MEMBERS`, `PREORDERS`, `CREW_TASKS`.
 - `src/data/provinces.ts` — **data riil** 38 provinsi dari simkopdes.go.id (koperasi, NIB, NPWP, RAT, simpanan, volume transaksi) + `NATIONAL` totals. Dipakai di peta + dropdown wilayah.
 
 ## Yang sudah diverifikasi jalan di browser (preview tool)
@@ -53,6 +62,8 @@ Urutan kasar (lama → baru):
 
 ## TODO / belum dikerjakan
 
+- [ ] Modul retail/supply-chain baru (2026-06-28) sudah lolos `npx tsc --noEmit` tapi **belum di-verify manual di browser** — perlu jalan demo 9-step end-to-end (lihat `PRD.md` §4) + cek reset demo.
+- [ ] `Pembukuan.tsx` tab "Laporan Keuangan" (Laba Rugi/Neraca) derived dari `accounting.ts` — Neraca pakai "Laba Ditahan" sebagai plug value (`totalAset - modalAwal`) biar selalu balance, bukan independent double-entry check. Cukup utk demo, bukan akuntansi teraudit.
 - [ ] `/pengaturan`, `/bantuan` masih stub kosong.
 - [ ] Bundle JS besar (~1.14 MB, sebagian besar Leaflet+Recharts+2 GeoJSON fetch). Belum code-split. Pertimbangkan `dynamic import()` per halaman kalau mau optimasi sebelum demo.
 - [ ] GeoJSON 38 provinsi di-fetch dari **raw.githubusercontent.com saat runtime** — butuh internet pas demo. Kalau venue demo no-wifi, **bundle file ini lokal** (`src/data/` atau `public/`) sebagai fallback.

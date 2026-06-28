@@ -1,8 +1,20 @@
-import type { AppNotification, Coop, LedgerEntry, Product, Transaction } from "@/lib/types"
+import type {
+  AppNotification,
+  Coop,
+  CrewTask,
+  LedgerEntry,
+  Member,
+  PreOrder,
+  Product,
+  PurchaseOrder,
+  Supplier,
+  Transaction,
+} from "@/lib/types"
 
 const now = Date.now()
 const min = 60_000
 const hr = 60 * min
+const day = 24 * hr
 
 export const COOP: Coop = {
   name: "KDKMP Sukamaju",
@@ -16,19 +28,25 @@ export const COOP: Coop = {
   ],
 }
 
+export const SUPPLIERS: Supplier[] = [
+  { id: "sup_sembako", name: "CV Sumber Pangan Jaya", contact: "+62 821-1111-2222", categories: ["Sembako", "Pangan"], leadTimeDays: 3 },
+  { id: "sup_minuman", name: "PT Tirta Nusantara", contact: "+62 822-3333-4444", categories: ["Minuman"], leadTimeDays: 2 },
+  { id: "sup_rumah", name: "Toko Grosir Mitra Rumah", contact: "+62 823-5555-6666", categories: ["Kebutuhan Rumah"], leadTimeDays: 4 },
+]
+
 /** Products — the 4 demo items (Beras/Minyak/Gula/Telur) match the reference,
  * tuned so Beras=Segera, Minyak/Gula=Perlu, Telur=Aman. */
 export const PRODUCTS: Product[] = [
-  { id: "p_beras", name: "Beras Premium", category: "Sembako", unit: "kg", price: 14000, cost: 12200, stock: 8, minThreshold: 20, maxThreshold: 120, baseVelocity: 4, soldUnits: 28, icon: "🍚" },
-  { id: "p_minyak", name: "Minyak Goreng", category: "Sembako", unit: "liter", price: 17500, cost: 15800, stock: 10, minThreshold: 15, maxThreshold: 70, baseVelocity: 2.5, soldUnits: 18, icon: "🛢️" },
-  { id: "p_gula", name: "Gula Pasir", category: "Sembako", unit: "kg", price: 16000, cost: 14500, stock: 7, minThreshold: 10, maxThreshold: 50, baseVelocity: 2, soldUnits: 14, icon: "🧂" },
-  { id: "p_telur", name: "Telur Ayam", category: "Pangan", unit: "kg", price: 28000, cost: 25000, stock: 15, minThreshold: 10, maxThreshold: 40, baseVelocity: 2, soldUnits: 12, icon: "🥚" },
-  { id: "p_tepung", name: "Tepung Terigu", category: "Sembako", unit: "kg", price: 12000, cost: 10500, stock: 34, minThreshold: 15, maxThreshold: 80, baseVelocity: 1.8, soldUnits: 9, icon: "🌾" },
-  { id: "p_mie", name: "Mie Instan", category: "Pangan", unit: "pcs", price: 3500, cost: 2900, stock: 220, minThreshold: 60, maxThreshold: 400, baseVelocity: 12, soldUnits: 64, icon: "🍜" },
-  { id: "p_kopi", name: "Kopi Sachet", category: "Minuman", unit: "pcs", price: 2000, cost: 1500, stock: 180, minThreshold: 50, maxThreshold: 300, baseVelocity: 9, soldUnits: 41, icon: "☕" },
-  { id: "p_galon", name: "Air Galon", category: "Minuman", unit: "galon", price: 20000, cost: 17000, stock: 62, minThreshold: 20, maxThreshold: 50, baseVelocity: 3, soldUnits: 16, icon: "💧" },
-  { id: "p_gas", name: "Gas LPG 3kg", category: "Kebutuhan Rumah", unit: "tabung", price: 22000, cost: 19500, stock: 28, minThreshold: 12, maxThreshold: 60, baseVelocity: 2.4, soldUnits: 11, icon: "🔥" },
-  { id: "p_sabun", name: "Sabun Mandi", category: "Kebutuhan Rumah", unit: "pcs", price: 4500, cost: 3600, stock: 95, minThreshold: 30, maxThreshold: 200, baseVelocity: 5, soldUnits: 22, icon: "🧼" },
+  { id: "p_beras", name: "Beras Premium", category: "Sembako", unit: "kg", price: 14000, cost: 12200, stock: 8, minThreshold: 20, maxThreshold: 120, baseVelocity: 4, soldUnits: 28, icon: "🍚", supplierId: "sup_sembako" },
+  { id: "p_minyak", name: "Minyak Goreng", category: "Sembako", unit: "liter", price: 17500, cost: 15800, stock: 10, minThreshold: 15, maxThreshold: 70, baseVelocity: 2.5, soldUnits: 18, icon: "🛢️", supplierId: "sup_sembako" },
+  { id: "p_gula", name: "Gula Pasir", category: "Sembako", unit: "kg", price: 16000, cost: 14500, stock: 7, minThreshold: 10, maxThreshold: 50, baseVelocity: 2, soldUnits: 14, icon: "🧂", supplierId: "sup_sembako" },
+  { id: "p_telur", name: "Telur Ayam", category: "Pangan", unit: "kg", price: 28000, cost: 25000, stock: 15, minThreshold: 10, maxThreshold: 40, baseVelocity: 2, soldUnits: 12, icon: "🥚", supplierId: "sup_sembako", expiryDate: now + 5 * day },
+  { id: "p_tepung", name: "Tepung Terigu", category: "Sembako", unit: "kg", price: 12000, cost: 10500, stock: 34, minThreshold: 15, maxThreshold: 80, baseVelocity: 1.8, soldUnits: 9, icon: "🌾", supplierId: "sup_sembako" },
+  { id: "p_mie", name: "Mie Instan", category: "Pangan", unit: "pcs", price: 3500, cost: 2900, stock: 220, minThreshold: 60, maxThreshold: 400, baseVelocity: 12, soldUnits: 64, icon: "🍜", supplierId: "sup_sembako" },
+  { id: "p_kopi", name: "Kopi Sachet", category: "Minuman", unit: "pcs", price: 2000, cost: 1500, stock: 180, minThreshold: 50, maxThreshold: 300, baseVelocity: 9, soldUnits: 41, icon: "☕", supplierId: "sup_minuman" },
+  { id: "p_galon", name: "Air Galon", category: "Minuman", unit: "galon", price: 20000, cost: 17000, stock: 62, minThreshold: 20, maxThreshold: 50, baseVelocity: 3, soldUnits: 16, icon: "💧", supplierId: "sup_minuman" },
+  { id: "p_gas", name: "Gas LPG 3kg", category: "Kebutuhan Rumah", unit: "tabung", price: 22000, cost: 19500, stock: 28, minThreshold: 12, maxThreshold: 60, baseVelocity: 2.4, soldUnits: 11, icon: "🔥", supplierId: "sup_rumah" },
+  { id: "p_sabun", name: "Sabun Mandi", category: "Kebutuhan Rumah", unit: "pcs", price: 4500, cost: 3600, stock: 95, minThreshold: 30, maxThreshold: 200, baseVelocity: 5, soldUnits: 22, icon: "🧼", supplierId: "sup_rumah" },
 ]
 
 export const CASH_OPENING = 4_500_000
@@ -58,6 +76,39 @@ export const NOTIFICATIONS: AppNotification[] = [
   { id: "n2", kind: "sync", title: "Sinkronisasi Simkopdes berhasil.", at: now - 10 * min },
   { id: "n3", kind: "success", title: "3 transaksi offline berhasil disinkronkan.", at: now - 2 * hr },
   { id: "n4", kind: "report", title: "Kas harian berhasil dibuat otomatis.", at: now - 3 * hr },
+]
+
+export const PURCHASE_ORDERS: PurchaseOrder[] = [
+  {
+    id: "po_seed1",
+    supplierId: "sup_sembako",
+    supplierName: "CV Sumber Pangan Jaya",
+    items: [{ productId: "p_gula", productName: "Gula Pasir", qty: 25, unitCost: 14500 }],
+    total: 25 * 14500,
+    status: "diajukan",
+    createdAt: now - 2 * hr,
+    updatedAt: now - 2 * hr,
+    aiGenerated: true,
+  },
+]
+
+export const MEMBERS: Member[] = [
+  { id: "mem_1", nik: "3204XXXXXXXX0001", name: "Siti Aminah", phone: "+62 812-0001-0001", points: 180, tier: "perak", joinedAt: now - 200 * day },
+  { id: "mem_2", nik: "3204XXXXXXXX0002", name: "Budi Santoso", phone: "+62 812-0002-0002", points: 40, tier: "reguler", joinedAt: now - 30 * day },
+  { id: "mem_3", nik: "3204XXXXXXXX0003", name: "Rina Wulandari", phone: "+62 812-0003-0003", points: 620, tier: "emas", joinedAt: now - 400 * day },
+]
+
+export const PREORDERS: PreOrder[] = [
+  { id: "pre_1", customerName: "Warga - Pak Dedi", customerPhone: "+62 813-1111-0001", items: [{ productId: "p_gas", productName: "Gas LPG 3kg", qty: 2 }], status: "baru", at: now - 30 * min, note: "(simulasi pesan WA masuk)" },
+  { id: "pre_2", customerName: "Warga - Ibu Yuli", customerPhone: "+62 813-1111-0002", items: [{ productId: "p_beras", productName: "Beras Premium", qty: 5 }], status: "disiapkan", at: now - 90 * min },
+]
+
+export const CREW_TASKS: CrewTask[] = [
+  { id: "ct_1", label: "Buka gerai & nyalakan lampu", done: true, completedAt: now - 5 * hr },
+  { id: "ct_2", label: "Cek rak & rapikan display produk", done: true, completedAt: now - 4 * hr },
+  { id: "ct_3", label: "Lap kaca & area kasir", done: false },
+  { id: "ct_4", label: "Catat suhu kulkas/galon (jika ada)", done: false },
+  { id: "ct_5", label: "Tutup gerai & kunci pintu", done: false },
 ]
 
 /** Weekly operational activity (aggregate) for the dashboard line chart. */

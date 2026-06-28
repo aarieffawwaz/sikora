@@ -1,23 +1,54 @@
 import { useMemo, useState } from "react"
-import { Minus, Plus, ShoppingCart, Trash2, Wifi, WifiOff } from "lucide-react"
+import { Lock, Minus, Plus, ShoppingCart, Trash2, Wifi, WifiOff } from "lucide-react"
 import { toast } from "sonner"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import type { CartItem } from "@/lib/types"
+import { bundleKey, suggestBundles } from "@/lib/aiEngine"
 import { rupiah } from "@/lib/format"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 export function Pos() {
   const products = useSikoraStore((s) => s.products)
   const isOnline = useSikoraStore((s) => s.isOnline)
   const recordSale = useSikoraStore((s) => s.recordSale)
+  const activeShift = useSikoraStore((s) => s.activeShift)
+  const openShift = useSikoraStore((s) => s.openShift)
+  const closeShift = useSikoraStore((s) => s.closeShift)
+  const transactions = useSikoraStore((s) => s.transactions)
+  const members = useSikoraStore((s) => s.members)
+  const activePromoIds = useSikoraStore((s) => s.activePromoIds)
 
   const [cart, setCart] = useState<Record<string, number>>({})
   const [paid, setPaid] = useState("")
+  const [memberId, setMemberId] = useState("")
+
+  const [openShiftDialog, setOpenShiftDialog] = useState(false)
+  const [openingCash, setOpeningCash] = useState("")
+  const [cashierName, setCashierName] = useState("")
+
+  const [closeShiftDialog, setCloseShiftDialog] = useState(false)
+  const [actualCash, setActualCash] = useState("")
 
   const items: CartItem[] = useMemo(
     () =>
@@ -31,6 +62,13 @@ export function Pos() {
   )
   const total = items.reduce((s, i) => s + i.qty * i.price, 0)
   const paidNum = parseInt(paid, 10) || 0
+
+  const activeBundles = useMemo(
+    () => suggestBundles(products).filter((b) => activePromoIds.includes(bundleKey(b))),
+    [products, activePromoIds],
+  )
+  const cartProductIds = new Set(items.map((i) => i.productId))
+  const matchedBundle = activeBundles.find((b) => b.productIds.some((id) => cartProductIds.has(id)))
 
   function add(id: string) {
     const p = products.find((x) => x.id === id)!
@@ -50,12 +88,92 @@ export function Pos() {
   function checkout() {
     if (!items.length) return
     const pay = paidNum >= total ? paidNum : total
-    recordSale(items, pay)
+    recordSale(items, pay, memberId || undefined)
     toast.success("Transaksi berhasil", {
       description: isOnline ? "Stok, kas & pembukuan diperbarui." : "Disimpan offline, akan disinkronkan.",
     })
     setCart({})
     setPaid("")
+    setMemberId("")
+  }
+
+  function submitOpenShift() {
+    const n = parseInt(openingCash, 10)
+    if (!cashierName.trim() || isNaN(n) || n < 0) {
+      toast.error("Isi nama kasir & kas awal yang valid")
+      return
+    }
+    openShift(n, cashierName.trim())
+    toast.success("Shift kasir dibuka", { description: `Kas awal ${rupiah(n)}.` })
+    setOpenShiftDialog(false)
+    setOpeningCash("")
+    setCashierName("")
+  }
+
+  const expectedClosingCash = activeShift
+    ? activeShift.openingCash + transactions.filter((t) => t.at >= activeShift.openedAt).reduce((s, t) => s + t.total, 0)
+    : 0
+
+  function submitCloseShift() {
+    const n = parseInt(actualCash, 10)
+    if (isNaN(n) || n < 0) {
+      toast.error("Isi jumlah kas fisik yang valid")
+      return
+    }
+    const variance = n - expectedClosingCash
+    closeShift(n)
+    toast(variance === 0 ? "Shift ditutup — kas sesuai." : "Shift ditutup", {
+      description: variance === 0 ? undefined : `Selisih kas: ${rupiah(variance)}`,
+    })
+    setCloseShiftDialog(false)
+    setActualCash("")
+  }
+
+  if (!activeShift) {
+    return (
+      <div className="space-y-5">
+        <PageHeader title="Transaksi POS" subtitle="Antarmuka kasir offline-first — penjualan langsung memperbarui semua modul." />
+        <Reveal>
+          <SectionCard>
+            <div className="flex flex-col items-center gap-3 py-14 text-center">
+              <Lock className="size-9 text-slate-300" />
+              <p className="font-medium text-slate-700">Shift kasir belum dibuka</p>
+              <p className="max-w-sm text-sm text-slate-400">
+                Buka shift dengan mencatat kas awal sebelum mulai bertransaksi. Kas fisik akan dicocokkan saat tutup shift.
+              </p>
+              <Button className="mt-2 gap-2" onClick={() => setOpenShiftDialog(true)}>
+                Buka Shift Kasir
+              </Button>
+            </div>
+          </SectionCard>
+        </Reveal>
+
+        <Dialog open={openShiftDialog} onOpenChange={setOpenShiftDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Buka Shift Kasir</DialogTitle>
+              <DialogDescription>Catat kas awal & nama kasir sebelum mulai bertransaksi.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Nama Kasir</Label>
+                <Input value={cashierName} onChange={(e) => setCashierName(e.target.value)} placeholder="Mis. Siti" />
+              </div>
+              <div className="space-y-2">
+                <Label>Kas Awal</Label>
+                <Input type="number" min={0} value={openingCash} onChange={(e) => setOpeningCash(e.target.value)} placeholder="0" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenShiftDialog(false)}>
+                Batal
+              </Button>
+              <Button onClick={submitOpenShift}>Buka Shift</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    )
   }
 
   return (
@@ -69,15 +187,20 @@ export function Pos() {
             className="lg:col-span-2"
             title="Pilih Produk"
             action={
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
-                  isOnline ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600",
-                )}
-              >
-                {isOnline ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
-                {isOnline ? "Online" : "Mode Offline"}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
+                    isOnline ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600",
+                  )}
+                >
+                  {isOnline ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
+                  {isOnline ? "Online" : "Mode Offline"}
+                </span>
+                <Button size="sm" variant="outline" onClick={() => setCloseShiftDialog(true)}>
+                  Tutup Shift
+                </Button>
+              </div>
             }
           >
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
@@ -127,6 +250,29 @@ export function Pos() {
                   </div>
                 ))}
 
+                {matchedBundle && (
+                  <div className="rounded-lg bg-violet-50 px-3 py-2 text-xs font-medium text-violet-600">
+                    🎉 Promo Bundling Aktif: -{matchedBundle.discountPct}% ({matchedBundle.productNames.join(" + ")})
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-500">Anggota (opsional, akru poin loyalitas)</Label>
+                  <Select value={memberId || "none"} onValueChange={(v) => setMemberId(v === "none" ? "" : v)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Tanpa anggota" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Tanpa anggota</SelectItem>
+                      {members.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name} — {m.points} poin
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="border-t border-slate-100 pt-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-500">Total</span>
@@ -157,6 +303,29 @@ export function Pos() {
           </SectionCard>
         </div>
       </Reveal>
+
+      <Dialog open={closeShiftDialog} onOpenChange={setCloseShiftDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tutup Shift Kasir</DialogTitle>
+            <DialogDescription>
+              Kas sistem (kas awal + penjualan selama shift): <strong>{rupiah(expectedClosingCash)}</strong>. Hitung kas fisik di laci kasir.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Kas Fisik (Hasil Hitung)</Label>
+              <Input type="number" min={0} value={actualCash} onChange={(e) => setActualCash(e.target.value)} placeholder="0" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCloseShiftDialog(false)}>
+              Batal
+            </Button>
+            <Button onClick={submitCloseShift}>Tutup Shift</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

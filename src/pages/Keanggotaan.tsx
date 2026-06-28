@@ -2,6 +2,22 @@ import { useState, useEffect, useRef } from "react"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
+import { useSikoraStore } from "@/store/useSikoraStore"
+import { MEMBER_TIER_LABEL } from "@/lib/aiEngine"
+import { cn } from "@/lib/utils"
+import type { PreOrderStatus } from "@/lib/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Network,
   GitFork,
@@ -14,8 +30,26 @@ import {
   Search,
   ChevronDown,
   MessageSquare,
+  Award,
+  PackageCheck,
 } from "lucide-react"
 import { toast } from "sonner"
+
+const PREORDER_STATUS_STYLE: Record<PreOrderStatus, string> = {
+  baru: "bg-amber-50 text-amber-600",
+  disiapkan: "bg-blue-50 text-blue-600",
+  selesai: "bg-emerald-50 text-emerald-600",
+}
+const PREORDER_STATUS_LABEL: Record<PreOrderStatus, string> = {
+  baru: "Baru",
+  disiapkan: "Disiapkan",
+  selesai: "Selesai",
+}
+const TIER_STYLE: Record<string, string> = {
+  reguler: "bg-slate-100 text-slate-600",
+  perak: "bg-sky-50 text-sky-600",
+  emas: "bg-amber-50 text-amber-600",
+}
 
 interface Member {
   id: string
@@ -860,6 +894,29 @@ export function Keanggotaan() {
     toast.success(`Menghubungi ${name}... Pesan Whatsapp berhasil dikirim via SIKORA Gateway.`)
   }
 
+  const loyaltyMembers = useSikoraStore((s) => s.members)
+  const addLoyaltyMember = useSikoraStore((s) => s.addMember)
+  const preOrders = useSikoraStore((s) => s.preOrders)
+  const updatePreOrderStatus = useSikoraStore((s) => s.updatePreOrderStatus)
+
+  const [addMemberOpen, setAddMemberOpen] = useState(false)
+  const [newNik, setNewNik] = useState("")
+  const [newName, setNewName] = useState("")
+  const [newPhone, setNewPhone] = useState("")
+
+  function submitAddMember() {
+    if (!newName.trim() || !newNik.trim()) {
+      toast.error("Isi NIK & nama anggota")
+      return
+    }
+    addLoyaltyMember({ nik: newNik.trim(), name: newName.trim(), phone: newPhone.trim() })
+    toast.success(`Anggota ${newName} ditambahkan ke program loyalitas`)
+    setAddMemberOpen(false)
+    setNewNik("")
+    setNewName("")
+    setNewPhone("")
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -867,6 +924,16 @@ export function Keanggotaan() {
         subtitle="Rekayasa transparansi tata kelola dan visualisasi jejaring sistem keanggotaan digital."
       />
 
+      <Tabs defaultValue="struktur">
+        <Reveal>
+          <TabsList className="h-auto flex-wrap">
+            <TabsTrigger value="struktur">Struktur & Jejaring</TabsTrigger>
+            <TabsTrigger value="loyalitas">Loyalitas Anggota</TabsTrigger>
+            <TabsTrigger value="preorder">Pre-Order Warga</TabsTrigger>
+          </TabsList>
+        </Reveal>
+
+      <TabsContent value="struktur" className="space-y-5 pt-4">
       {/* ── Stats Strip ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-3">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
@@ -1258,6 +1325,115 @@ export function Keanggotaan() {
           </div>
         </Reveal>
       </div>
+      </TabsContent>
+
+      <TabsContent value="loyalitas" className="pt-4">
+        <Reveal>
+          <SectionCard
+            title="Loyalitas Anggota"
+            subtitle={`${loyaltyMembers.length} anggota terdaftar program poin belanja`}
+            action={
+              <Button size="sm" onClick={() => setAddMemberOpen(true)}>
+                + Tambah Anggota
+              </Button>
+            }
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-left text-xs font-medium text-slate-400">
+                    <th className="pb-3 pl-2">NIK</th>
+                    <th className="pb-3">Nama</th>
+                    <th className="pb-3">Telepon</th>
+                    <th className="pb-3 text-right">Poin</th>
+                    <th className="pb-3 pl-4">Tier</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {loyaltyMembers.map((m) => (
+                    <tr key={m.id} className="hover:bg-slate-50/60">
+                      <td className="py-3 pl-2 text-slate-500">{m.nik}</td>
+                      <td className="font-medium text-slate-800">{m.name}</td>
+                      <td className="text-slate-500">{m.phone}</td>
+                      <td className="text-right font-semibold text-slate-800">{m.points}</td>
+                      <td className="pl-4">
+                        <span className={cn("flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold", TIER_STYLE[m.tier])}>
+                          <Award className="size-3" /> {MEMBER_TIER_LABEL[m.tier]}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </SectionCard>
+        </Reveal>
+      </TabsContent>
+
+      <TabsContent value="preorder" className="pt-4">
+        <Reveal>
+          <SectionCard title="Pre-Order Warga (simulasi WA)" subtitle={`${preOrders.length} pesanan masuk`}>
+            {preOrders.length === 0 ? (
+              <p className="py-6 text-center text-sm text-slate-400">Belum ada pre-order.</p>
+            ) : (
+              <div className="space-y-3">
+                {preOrders.map((p) => (
+                  <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 p-3">
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{p.customerName} — {p.customerPhone}</p>
+                      <p className="text-xs text-slate-500">{p.items.map((i) => `${i.productName} x${i.qty}`).join(", ")}</p>
+                      {p.note && <p className="text-xs text-slate-400">{p.note}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("rounded-full px-2.5 py-1 text-xs font-semibold", PREORDER_STATUS_STYLE[p.status])}>
+                        {PREORDER_STATUS_LABEL[p.status]}
+                      </span>
+                      {p.status === "baru" && (
+                        <Button size="sm" variant="outline" onClick={() => updatePreOrderStatus(p.id, "disiapkan")}>
+                          Tandai Disiapkan
+                        </Button>
+                      )}
+                      {p.status === "disiapkan" && (
+                        <Button size="sm" className="gap-1.5" onClick={() => updatePreOrderStatus(p.id, "selesai")}>
+                          <PackageCheck className="size-3.5" /> Tandai Selesai
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+        </Reveal>
+      </TabsContent>
+      </Tabs>
+
+      <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tambah Anggota Loyalitas</DialogTitle>
+            <DialogDescription>Daftarkan anggota baru ke program poin belanja.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>NIK</Label>
+              <Input value={newNik} onChange={(e) => setNewNik(e.target.value)} placeholder="32xxxxxxxxxxxxxxxx" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nama</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nama lengkap" />
+            </div>
+            <div className="space-y-2">
+              <Label>Telepon</Label>
+              <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+62 8xx-xxxx-xxxx" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddMemberOpen(false)}>Batal</Button>
+            <Button onClick={submitAddMember}>Tambah</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

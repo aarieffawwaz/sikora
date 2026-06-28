@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   Search,
   MapPin,
@@ -736,9 +737,12 @@ export function DatabaseKoperasi() {
       </Reveal>
 
       {/* Content Area */}
-      <div className="flex gap-6 items-start">
+      <div className="flex gap-6 items-start overflow-hidden">
         {/* Main View */}
-        <div className={cn("transition-all", selected ? "flex-1" : "w-full")}>
+        <motion.div 
+          layout 
+          className={cn("transition-all duration-300", selected ? "w-[calc(100%-444px)]" : "w-full")}
+        >
           {filtered.length === 0 ? (
             <div className="py-16 text-center text-slate-400">
               <Building2 className="size-10 mx-auto mb-3 opacity-30" />
@@ -746,7 +750,7 @@ export function DatabaseKoperasi() {
               <p className="text-sm">Coba ubah kata kunci atau filter</p>
             </div>
           ) : viewMode === "card" ? (
-            <div className={cn("grid gap-4", selected ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
+            <div className={cn("grid gap-4", selected ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
               {filtered.map((kop) => (
                 <Reveal key={kop.id}>
                   <KoperasiCard kop={kop} onClick={() => setSelected(kop.id === selected?.id ? null : kop)} />
@@ -754,33 +758,55 @@ export function DatabaseKoperasi() {
               ))}
             </div>
           ) : viewMode === "table" ? (
-            <div className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Nama Koperasi</th>
-                    <th className="px-4 py-3 font-semibold">Lokasi</th>
-                    <th className="px-4 py-3 font-semibold">Provinsi</th>
-                    <th className="px-4 py-3 font-semibold text-center">Status</th>
-                    <th className="px-4 py-3 font-semibold text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filtered.map(kop => (
-                    <tr key={kop.id} className={cn("transition-colors", selected?.id === kop.id ? "bg-[#025669]/5" : "hover:bg-slate-50/50")}>
-                      <td className="px-4 py-3 font-medium text-slate-800">{kop.nama}</td>
-                      <td className="px-4 py-3 text-slate-600">{kop.kecamatan}, {kop.kabupaten}</td>
-                      <td className="px-4 py-3 text-slate-600">{kop.provinsi}</td>
-                      <td className="px-4 py-3 text-center"><StatusBadge status={kop.status} /></td>
-                      <td className="px-4 py-3 text-right">
-                        <button onClick={() => setSelected(kop.id === selected?.id ? null : kop)} className="text-[#025669] font-medium hover:underline text-xs bg-[#025669]/10 px-3 py-1.5 rounded-lg">
-                          {selected?.id === kop.id ? "Tutup" : "Lihat Detail"}
-                        </button>
-                      </td>
+            <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                      <th className="px-5 py-3.5">Koperasi</th>
+                      <th className="px-5 py-3.5">Lokasi</th>
+                      <th className="px-5 py-3.5">Provinsi</th>
+                      <th className="px-5 py-3.5 text-center">Status</th>
+                      <th className="px-5 py-3.5 text-right">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100/80">
+                    {filtered.map(kop => (
+                      <tr 
+                        key={kop.id} 
+                        onClick={() => setSelected(kop.id === selected?.id ? null : kop)}
+                        className={cn(
+                          "transition-all cursor-pointer group", 
+                          selected?.id === kop.id ? "bg-sky-50/50" : "hover:bg-slate-50"
+                        )}
+                      >
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="size-10 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
+                              <img src={kop.foto} alt={kop.nama} className="size-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="font-semibold text-slate-800 text-sm group-hover:text-[#025669] transition-colors">{kop.nama}</p>
+                              <p className="text-xs text-slate-500 mt-0.5">AHU: {kop.skAhu}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-slate-600">
+                          <p className="font-medium text-slate-700">{kop.kecamatan}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">{kop.kabupaten}</p>
+                        </td>
+                        <td className="px-5 py-4 text-sm text-slate-600">{kop.provinsi}</td>
+                        <td className="px-5 py-4 text-center"><StatusBadge status={kop.status} /></td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors bg-white border border-slate-200 text-slate-600 group-hover:border-[#025669] group-hover:text-[#025669]">
+                            {selected?.id === kop.id ? "Tutup" : "Detail"}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
             <div className="w-full h-[600px] rounded-xl border border-slate-200 overflow-hidden shadow-sm relative z-0">
@@ -807,14 +833,24 @@ export function DatabaseKoperasi() {
               </MapContainer>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Detail slide-in */}
-        {selected && (
-          <div className="w-[420px] shrink-0 sticky top-4 self-start rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden h-[calc(100vh-120px)] transition-all">
-            <KoperasiDetail kop={selected} onClose={() => setSelected(null)} />
-          </div>
-        )}
+        <AnimatePresence>
+          {selected && (
+            <motion.div
+              initial={{ opacity: 0, x: 20, width: 0 }}
+              animate={{ opacity: 1, x: 0, width: 420 }}
+              exit={{ opacity: 0, x: 20, width: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="shrink-0 sticky top-4 self-start rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden h-[calc(100vh-120px)]"
+            >
+              <div className="w-[420px] h-full">
+                <KoperasiDetail kop={selected} onClose={() => setSelected(null)} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
