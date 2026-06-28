@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { useEffect } from "react"
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Toaster } from "@/components/ui/sonner"
 import { Dashboard } from "@/pages/Dashboard"
@@ -14,9 +15,20 @@ import { Monitoring } from "@/pages/Monitoring"
 import { Stub } from "@/pages/Stub"
 import { DatabaseKoperasi } from "@/pages/DatabaseKoperasi"
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route element={<AppLayout />}>
