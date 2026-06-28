@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
+import { CountUp } from "@/components/shared/CountUp"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { MEMBER_TIER_LABEL } from "@/lib/aiEngine"
 import { cn } from "@/lib/utils"
@@ -942,7 +943,7 @@ export function Keanggotaan() {
           </span>
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Anggota Teraktivasi</p>
-            <p className="text-lg font-black text-slate-800 leading-tight">2.477.207</p>
+            <CountUp value={2477207} format={(n) => n.toLocaleString("id-ID")} className="text-lg font-black text-slate-800 leading-tight" />
           </div>
         </div>
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
@@ -951,7 +952,7 @@ export function Keanggotaan() {
           </span>
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Laki-Laki</p>
-            <p className="text-lg font-black text-sky-600 leading-tight">1.487.630</p>
+            <CountUp value={1487630} format={(n) => n.toLocaleString("id-ID")} className="text-lg font-black text-sky-600 leading-tight" />
           </div>
         </div>
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
@@ -960,7 +961,7 @@ export function Keanggotaan() {
           </span>
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Perempuan</p>
-            <p className="text-lg font-black text-pink-500 leading-tight">989.577</p>
+            <CountUp value={989577} format={(n) => n.toLocaleString("id-ID")} className="text-lg font-black text-pink-500 leading-tight" />
           </div>
         </div>
       </div>
