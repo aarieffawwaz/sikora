@@ -1017,8 +1017,7 @@ export function LandingPage() {
                 Sinergi Koperasi Raya (SIKORA) merevolusi pengelolaan koperasi desa (KDKMP). Keputusan operasional lebih cerdas, aman, dan terintegrasi secara nasional.
               </p>
               <p className="text-[11px] text-slate-400">
-                PEBS FEB Universitas Indonesia<br />
-                Depok, Jawa Barat, Indonesia
+                Indonesia
               </p>
             </div>
 
@@ -1077,7 +1076,7 @@ export function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="flex gap-2.5 items-center">
                 <span className="text-slate-400">Powered by</span>
-                <img src={nirmatechLogo} alt="NIRMATECH" className="h-[38px] object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                <img src={nirmatechLogo} alt="NIRMATECH" className="h-[52px] object-contain opacity-90 hover:opacity-100 transition-opacity" />
               </div>
               
               {/* Social Media Icons (Saudara.ai Style with inline SVGs) */}
