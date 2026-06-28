@@ -52,7 +52,7 @@ function Reveal({
 function SaudaraBadge({ text }: { text: string }) {
   return (
     <div className="inline-flex items-center gap-1.5 bg-gradient-to-b from-white to-slate-50 border border-blue-500/10 rounded-full px-3.5 py-[6px] shadow-[0_0_8px_rgba(37,99,235,0.04),0_0_0_1px_rgba(37,99,235,0.02),inset_0_1px_0_rgba(255,255,255,0.9)] hover:shadow-[0_0_12px_rgba(37,99,235,0.1),0_0_0_1px_rgba(37,99,235,0.06)] transition-all duration-300 ease-out active:scale-[0.97] cursor-pointer">
-      <span className="text-[11px] text-slate-500 font-sans tracking-wide">Backed by</span>
+      <span className="text-[11px] text-slate-500 font-sans tracking-wide">Powered by</span>
       <div className="w-[18px] h-[18px] rounded-xs flex items-center justify-center flex-shrink-0 overflow-hidden">
         <img src={nirmatechIcon} alt="N" className="w-full h-full object-cover" />
       </div>
