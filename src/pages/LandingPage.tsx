@@ -539,7 +539,7 @@ export function LandingPage() {
       </section>
 
       {/* --- 4.3 CREATIVE FEATURES DISPLAY (Saudara.ai Style) --- */}
-      <section id="features" className="py-16 md:py-24 bg-white relative z-10 border-t border-slate-100">
+      <section id="fitur" className="py-16 md:py-24 bg-white relative z-10 border-t border-slate-100">
         <div className="mx-auto w-full max-w-5xl px-4 md:px-6">
           
           {/* Header */}
