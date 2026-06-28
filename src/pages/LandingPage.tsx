@@ -126,7 +126,7 @@ export function LandingPage() {
           <nav className="flex items-center justify-between h-full gap-4 sm:gap-12">
             
             <div className="flex items-center gap-2">
-              <img src={logoInvert} alt="SIKORA" className="h-12 object-contain" />
+              <img src={logoInvert} alt="SIKORA" className="h-28 object-contain -my-6 scale-110" />
               <span className="text-[8px] bg-blue-50 text-[var(--primary)] border border-blue-100 px-1.5 py-0.5 rounded-full font-bold uppercase hidden xs:inline tracking-wider">AI DSS</span>
             </div>
 
@@ -1022,7 +1022,7 @@ export function LandingPage() {
             {/* Column 1: Brand & Desc (4 cols) */}
             <div className="md:col-span-4 space-y-4">
               <div className="flex items-center">
-                <img src={logoInvert} alt="SIKORA" className="h-14 object-contain" />
+                <img src={logoInvert} alt="SIKORA" className="h-36 object-contain -ml-2" />
               </div>
               <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
                 Sinergi Koperasi Raya (SIKORA) merevolusi pengelolaan koperasi desa (KDKMP). Keputusan operasional lebih cerdas, aman, dan terintegrasi secara nasional.
