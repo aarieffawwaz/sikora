@@ -647,13 +647,13 @@ export function LandingPage() {
                   </p>
                 </div>
                 
-                <div className="w-full flex items-center justify-center pt-6">
-                  <div className="w-full scale-90">
-                    <div aria-hidden="true" className="relative mt-6 h-28 flex items-center justify-center">
+                <div className="w-full mt-auto pt-6 h-[140px] flex items-end justify-center">
+                  <div className="w-full scale-90 translate-y-3">
+                    <div aria-hidden="true" className="relative h-28 flex items-center justify-center">
                       <div className="rounded-xl border text-card-foreground shadow-sm aspect-video w-4/5 translate-y-4 p-3 transition-transform duration-300 ease-in-out group-hover:-rotate-3 bg-slate-50 border-slate-200">
                         <div className="mb-2 flex items-center gap-1.5">
                           <div className="bg-blue-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="size-2.5 text-white"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-2.5 text-white"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                           </div>
                           <span className="text-slate-700 text-[11px] font-bold">5 Gerai Aktif</span>
                         </div>
@@ -667,7 +667,7 @@ export function LandingPage() {
                       
                       <div className="rounded-xl border text-card-foreground shadow-sm absolute -top-4 right-4 flex w-12 h-12 transition-transform duration-300 ease-in-out group-hover:rotate-6 bg-white border-slate-200">
                         <div className="bg-emerald-50 m-auto flex w-8 h-8 rounded-full border border-emerald-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="stroke-emerald-600 m-auto size-3.5"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-emerald-600 m-auto size-3.5"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
                         </div>
                       </div>
                     </div>
@@ -686,13 +686,46 @@ export function LandingPage() {
                   </p>
                 </div>
                 
-                <div className="w-full flex items-center justify-center pt-6">
+                <div className="w-full mt-auto pt-6 h-[140px] flex items-end justify-center">
                   <div className="w-full scale-90">
-                    <div className="relative rounded-xl border border-slate-200 overflow-hidden bg-white shadow-3xs h-[100px] w-full flex items-end">
-                      {/* Simple animated Chart background representing Saudara style */}
-                      <svg className="w-full h-full" viewBox="0 0 356 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 131.5L33.5 125.5L64 102.5L93.5 118.5L124.5 90L154 100.5L183.5 76L207.5 92L244.5 51L274.5 60.5L307.5 46L334.5 28.5L356.5 1" stroke="#2563EB" strokeWidth="2"></path>
-                        <path d="M33.5 125.5L1 131.5V197H356.5V1L335 28.5L306.5 46L274.5 60.5L244.5 51L207.5 92L183.5 76L154 100.5L124.5 90L93.5 118.5L64 102.5L33.5 125.5Z" fill="#2563EB" fillOpacity="0.1"></path>
+                    <div className="relative rounded-xl border border-slate-200 overflow-hidden bg-white shadow-3xs h-[115px] w-full flex items-end">
+                      <svg className="w-full h-full" viewBox="0 0 380 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                          <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 20" fill="none" stroke="rgba(148, 163, 184, 0.08)" strokeWidth="1" />
+                          </pattern>
+                          <linearGradient id="lineGrad" x1="0" y1="0" x2="380" y2="0" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stopColor="#3b82f6" />
+                            <stop offset="50%" stopColor="#6366f1" />
+                            <stop offset="100%" stopColor="#ec4899" />
+                          </linearGradient>
+                          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
+                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                          </linearGradient>
+                          <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="120" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
+                            <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.1" />
+                          </linearGradient>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid)" />
+                        <line x1="0" y1="30" x2="380" y2="30" stroke="rgba(148, 163, 184, 0.12)" strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1="0" y1="60" x2="380" y2="60" stroke="rgba(148, 163, 184, 0.12)" strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1="0" y1="90" x2="380" y2="90" stroke="rgba(148, 163, 184, 0.12)" strokeWidth="1" strokeDasharray="4 4" />
+                        <rect x="25" y="85" width="10" height="30" rx="3" fill="url(#barGrad)" />
+                        <rect x="65" y="75" width="10" height="40" rx="3" fill="url(#barGrad)" />
+                        <rect x="105" y="60" width="10" height="55" rx="3" fill="url(#barGrad)" />
+                        <rect x="145" y="68" width="10" height="47" rx="3" fill="url(#barGrad)" />
+                        <rect x="185" y="45" width="10" height="70" rx="3" fill="url(#barGrad)" />
+                        <rect x="225" y="55" width="10" height="60" rx="3" fill="url(#barGrad)" />
+                        <rect x="265" y="30" width="10" height="85" rx="3" fill="url(#barGrad)" />
+                        <rect x="305" y="40" width="10" height="75" rx="3" fill="url(#barGrad)" />
+                        <rect x="345" y="20" width="10" height="95" rx="3" fill="url(#barGrad)" />
+                        <path d="M 10 95 C 45 92, 55 70, 95 68 C 135 66, 145 40, 185 38 C 225 36, 235 22, 275 20 C 315 18, 335 12, 370 10" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" />
+                        <path d="M 10 95 C 45 92, 55 70, 95 68 C 135 66, 145 40, 185 38 C 225 36, 235 22, 275 20 C 315 18, 335 12, 370 10 V 115 H 10 Z" fill="url(#areaGrad)" />
+                        <circle cx="95" cy="68" r="4" fill="#6366f1" stroke="white" strokeWidth="1.5" />
+                        <circle cx="185" cy="38" r="4" fill="#6366f1" stroke="white" strokeWidth="1.5" />
+                        <circle cx="275" cy="20" r="4" fill="#ec4899" stroke="white" strokeWidth="1.5" />
                       </svg>
                     </div>
                   </div>
@@ -710,8 +743,8 @@ export function LandingPage() {
                   </p>
                 </div>
                 
-                <div className="w-full flex items-center justify-center pt-6">
-                  <div className="w-full scale-90">
+                <div className="w-full mt-auto pt-6 h-[140px] flex items-end justify-center">
+                  <div className="w-full scale-90 translate-y-2">
                     <div className="rounded-xl border text-card-foreground shadow-xs p-3 transition-transform duration-300 group-hover:scale-105 bg-slate-50 border-slate-200">
                       <div className="w-fit flex items-center gap-1.5 mb-2.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 fill-blue-500/20 stroke-[var(--primary)]"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
