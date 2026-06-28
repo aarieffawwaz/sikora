@@ -385,10 +385,10 @@ export function LandingPage() {
                     {/* Card 1: KUD Tani Makmur */}
                     <div className="relative flex h-28 w-[19rem] -skew-y-[6deg] select-none flex-col justify-between rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 transition-all duration-500 group-hover:shadow-md hover:border-slate-300 hover:bg-slate-50 grayscale-[100%] hover:grayscale-0 [&>*]:flex [&>*]:items-center [&>*]:gap-2 [grid-area:stack] -translate-y-4 hover:-translate-y-12">
                       <div className="flex items-center gap-2">
-                        <span className="relative inline-block rounded-full p-1 bg-orange-500">
+                        <span className="relative inline-block rounded-full p-1 bg-[var(--primary)]">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3 text-white"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
                         </span>
-                        <p className="text-xs font-bold text-orange-500">KUD Tani Makmur</p>
+                        <p className="text-xs font-bold text-[var(--primary)]">KUD Tani Makmur</p>
                       </div>
                       <p className="whitespace-nowrap text-xs text-slate-800 font-bold">Beras Cianjur & Palawija • 95% Tepat Waktu</p>
                       <p className="text-slate-500 text-[10px]">140 pengiriman selesai • Cianjur</p>
@@ -400,7 +400,7 @@ export function LandingPage() {
                         <span className="relative inline-block rounded-full p-1 bg-slate-900">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3 text-white"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
                         </span>
-                        <p className="text-xs font-bold text-orange-500">PT Sembako Utama</p>
+                        <p className="text-xs font-bold text-[var(--primary)]">PT Sembako Utama</p>
                       </div>
                       <p className="whitespace-nowrap text-xs text-slate-800 font-bold">Minyak & Gula Pasir • 89% Tepat Waktu</p>
                       <p className="text-slate-500 text-[10px]">87 pengiriman selesai • Bandung</p>
@@ -412,7 +412,7 @@ export function LandingPage() {
                         <span className="relative inline-block rounded-full p-1 bg-slate-900">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3 text-white"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg>
                         </span>
-                        <p className="text-xs font-bold text-orange-500">Bulog Divre Jabar</p>
+                        <p className="text-xs font-bold text-[var(--primary)]">Bulog Divre Jabar</p>
                       </div>
                       <p className="whitespace-nowrap text-xs text-slate-800 font-bold">Beras SPHP Stabilisasi • 98% Tepat Waktu</p>
                       <p className="text-slate-500 text-[10px]">412 pengiriman selesai • Bandung</p>
@@ -634,7 +634,7 @@ export function LandingPage() {
                     <div className="p-3 pt-0">
                       <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200">
                         <input type="text" placeholder="Tanyakan seputar pemasok..." className="flex-1 bg-transparent border-none outline-none text-xs text-slate-800 placeholder-slate-400 px-1" readOnly />
-                        <button className="flex items-center justify-center rounded-full text-white size-6.5 bg-orange-500 hover:bg-orange-600 cursor-pointer border-0">
+                        <button className="flex items-center justify-center rounded-full text-white size-6.5 bg-[var(--primary)] hover:bg-blue-700 cursor-pointer border-0">
                           <svg xmlns="http://www.w3.org/2050/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-3.5"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg>
                         </button>
                       </div>
@@ -1014,7 +1014,7 @@ export function LandingPage() {
         <div className="max-w-5xl mx-auto">
           
           {/* Top Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 pb-12 border-b border-slate-200/60">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 pb-6 border-b border-slate-200/60">
             
             {/* Column 1: Brand & Desc (4 cols) */}
             <div className="md:col-span-4 space-y-4">
@@ -1075,7 +1075,7 @@ export function LandingPage() {
           </div>
 
           {/* Bottom Copyright Line */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 text-[11px]">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 text-[11px]">
             <div className="flex items-center gap-3">
               <img src={onlyLogo} alt="SIKORA" className="h-5.5 object-contain" />
               <span>&copy; 2026 SIKORA — Sinergi Koperasi Raya. Hak Cipta Dilindungi.</span>
@@ -1084,7 +1084,7 @@ export function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="flex gap-2.5 items-center">
                 <span className="text-slate-400">Powered by</span>
-                <img src={nirmatechLogo} alt="NIRMATECH" className="h-[96px] object-contain opacity-95 hover:opacity-100 transition-opacity" />
+                <img src={nirmatechLogo} alt="NIRMATECH" className="-my-4 h-[96px] object-contain opacity-95 hover:opacity-100 transition-opacity" />
               </div>
               
               {/* Social Media Icons (Saudara.ai Style with inline SVGs) */}
