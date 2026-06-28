@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, ChevronDown, MapPin, Menu, RotateCcw } from "lucide-react"
+import { Bell, CalendarDays, ChevronDown, LogOut, MapPin, Menu, RotateCcw } from "lucide-react"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { PROVINCES } from "@/data/provinces"
 import { waktuLalu } from "@/lib/format"
@@ -61,7 +61,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
         {/* Top-Right widgets */}
         <div className="flex items-center gap-3">
           {/* Role switcher — cosmetic framing only, does not gate any route/feature */}
-          <div className="flex rounded-full border border-slate-200 bg-white p-1 text-xs font-medium shadow-sm">
+          <div className="flex rounded-full border border-white/40 bg-white/60 backdrop-blur-md p-1 text-xs font-medium shadow-sm">
             {(Object.keys(ROLE_LABEL) as CurrentRole[]).map((role) => (
               <button
                 key={role}
@@ -81,7 +81,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
             value={selectedProvinceId ?? "all"}
             onValueChange={(v) => setProvince(v === "all" ? null : v)}
           >
-            <SelectTrigger className="h-auto rounded-full border-slate-200 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm">
+            <SelectTrigger className="h-auto rounded-full border-white/40 bg-white/60 backdrop-blur-md px-3.5 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-white/80 transition-colors">
               <MapPin className="size-4 text-slate-400" />
               <SelectValue placeholder="Semua Wilayah" />
             </SelectTrigger>
@@ -98,7 +98,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="relative flex size-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm">
+              <button className="relative flex size-10 items-center justify-center rounded-full border border-white/40 bg-white/60 backdrop-blur-md text-slate-600 shadow-sm hover:bg-white/80 transition-colors">
                 <Bell className="size-5" />
                 {notifications.length > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white">
@@ -125,7 +125,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
           {/* Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 shadow-sm">
+              <button className="flex items-center gap-2.5 rounded-full border border-white/40 bg-white/60 backdrop-blur-md py-1 pl-1 pr-3 shadow-sm hover:bg-white/80 transition-colors">
                 <Avatar className="size-8">
                   <AvatarImage src={profile} alt="Admin Koperasi" className="object-cover" />
                   <AvatarFallback className="bg-primary text-xs text-primary-foreground">AK</AvatarFallback>
@@ -150,6 +150,15 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
                 className="gap-2 text-slate-600 cursor-pointer"
               >
                 <RotateCcw className="size-4" /> Reset Demo
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  window.location.href = "/"
+                }}
+                className="gap-2 text-rose-600 focus:text-rose-600 focus:bg-rose-50 cursor-pointer"
+              >
+                <LogOut className="size-4 text-rose-500" /> Keluar
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

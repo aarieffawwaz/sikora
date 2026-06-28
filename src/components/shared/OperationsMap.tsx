@@ -55,11 +55,22 @@ function bubbleIcon(p: Province, selected: boolean, dim: boolean, filter: string
     border = selected ? "#93c5fd" : "rgba(255,255,255,0.9)"
   }
 
+  const pulseHtml = dim ? "" : `
+    <div style="position:absolute;inset:-6px;border-radius:9999px;border:2px solid ${border};animation:map-radar-pulse-anim 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;pointer-events:none;z-index:0;"></div>
+  `
+
   return L.divIcon({
     className: "",
     iconSize: [BUBBLE_SIZE, BUBBLE_SIZE],
     iconAnchor: [r, r],
-    html: `<div style="width:${BUBBLE_SIZE}px;height:${BUBBLE_SIZE}px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-size:9.5px;border:1.5px solid ${border};box-shadow:0 1.5px 5px rgba(0,0,0,0.25);opacity:${dim ? 0.35 : 1};transition:all .3s">${val}</div>`,
+    html: `
+      <div style="position:relative;width:${BUBBLE_SIZE}px;height:${BUBBLE_SIZE}px;display:flex;align-items:center;justify-content:center;">
+        ${pulseHtml}
+        <div style="width:${BUBBLE_SIZE}px;height:${BUBBLE_SIZE}px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-size:9.5px;border:1.5px solid ${border};box-shadow:0 1.5px 5px rgba(0,0,0,0.25);opacity:${dim ? 0.35 : 1};transition:all .3s;position:relative;z-index:10;">
+          ${val}
+        </div>
+      </div>
+    `,
   })
 }
 

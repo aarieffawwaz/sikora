@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom"
+import { LogOut } from "lucide-react"
 import { PRIMARY_NAV, SECONDARY_NAV, type NavItem } from "@/config/nav"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import { cn } from "@/lib/utils"
@@ -10,7 +11,7 @@ function NavRow({ item }: { item: NavItem }) {
   return (
     <NavLink
       to={item.path}
-      end={item.path === "/"}
+      end={item.path === "/dashboard"}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
@@ -50,6 +51,13 @@ export function Sidebar() {
         {SECONDARY_NAV.map((item) => (
           <NavRow key={item.path} item={item} />
         ))}
+        <button
+          onClick={() => window.location.href = "/"}
+          className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors text-slate-400 hover:bg-white/5 hover:text-white cursor-pointer mt-1"
+        >
+          <LogOut className="size-[18px] text-red-400" strokeWidth={2} />
+          <span className="text-red-400">Keluar</span>
+        </button>
       </nav>
 
       {/* Promo card */}

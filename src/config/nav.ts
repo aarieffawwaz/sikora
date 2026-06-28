@@ -21,7 +21,7 @@ export interface NavItem {
 }
 
 export const PRIMARY_NAV: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard },
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Sinkronisasi Data", path: "/sinkronisasi", icon: RefreshCw },
   { label: "Persediaan", path: "/persediaan", icon: Package },
   { label: "Rantai Pasok", path: "/rantai-pasok", icon: Truck },

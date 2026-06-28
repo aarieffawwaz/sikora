@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Toaster } from "@/components/ui/sonner"
 import { Dashboard } from "@/pages/Dashboard"
+import { LandingPage } from "@/pages/LandingPage"
 import { Sinkronisasi } from "@/pages/Sinkronisasi"
 import { Persediaan } from "@/pages/Persediaan"
 import { RantaiPasok } from "@/pages/RantaiPasok"
@@ -17,8 +18,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/sinkronisasi" element={<Sinkronisasi />} />
           <Route path="/persediaan" element={<Persediaan />} />
           <Route path="/rantai-pasok" element={<RantaiPasok />} />
