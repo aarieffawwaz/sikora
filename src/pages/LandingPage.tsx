@@ -1159,7 +1159,7 @@ function TimelineStep({
             </div>
 
             {/* Large back count number */}
-            <div className={`absolute top-4 text-6xl font-black text-slate-200/35 select-none leading-none z-0 ${isRight ? "right-4" : "right-4 md:left-6 md:right-auto"}`}>
+            <div className="absolute top-4 right-4 text-6xl font-black text-slate-200/20 select-none leading-none z-0">
               {number}
             </div>
           </div>
