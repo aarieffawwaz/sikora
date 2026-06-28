@@ -1013,125 +1013,116 @@ export function LandingPage() {
       </section>
 
       {/* --- 7. MULTI-COLUMN FOOTER (Saudara.ai Style) --- */}
-      <footer className="w-full bg-white pt-16 pb-8 px-6 text-slate-500 text-xs font-sans border-t border-slate-200/60 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          
-          {/* Top Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 pb-6 border-b border-slate-200/60">
-            
-            {/* Column 1: Brand & Desc (4 cols) */}
-            <div className="md:col-span-4 space-y-3">
-              <div className="flex items-center">
-                <img src={logoInvert} alt="SIKORA" className="h-36 object-contain -my-6 -ml-6" />
-              </div>
-              <p className="text-slate-400 text-xs leading-relaxed max-w-xs mt-1">
-                Sinergi Koperasi Raya (SIKORA) merevolusi pengelolaan koperasi desa (KDKMP). Keputusan operasional lebih cerdas, aman, dan terintegrasi secara nasional.
-              </p>
-              <p className="text-[11px] text-slate-400 pt-3">
-                Indonesia
-              </p>
-            </div>
-
-            {/* Column 2: Fitur (2 cols) */}
-            <div className="md:col-span-2 space-y-3.5">
-              <h4 className="font-bold text-[11px] text-slate-800 tracking-wider uppercase">Fitur</h4>
-              <ul className="space-y-2 text-[11px]">
-                <li><a href="#fitur" className="hover:text-slate-900 transition-colors">API Simkopdes</a></li>
-                <li><a href="#fitur" className="hover:text-slate-900 transition-colors">AI DSS Engine</a></li>
-                <li><a href="#fitur" className="hover:text-slate-900 transition-colors">Kasir Offline POS</a></li>
-                <li><a href="#fitur" className="hover:text-slate-900 transition-colors">Derived Reporting</a></li>
-              </ul>
-            </div>
-
-            {/* Column 3: Company (2 cols) */}
-            <div className="md:col-span-2 space-y-3.5">
-              <h4 className="font-bold text-[11px] text-slate-800 tracking-wider uppercase">Perusahaan</h4>
-              <ul className="space-y-2 text-[11px]">
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Tentang Kami</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Kebijakan Privasi</a></li>
-                <li><a href="#" className="hover:text-slate-900 transition-colors">Syarat & Ketentuan</a></li>
-                <li><a href="mailto:info@nirmatech.com" className="hover:text-slate-900 transition-colors">Hubungi Kami</a></li>
-              </ul>
-            </div>
-
-            {/* Column 4: Newsletter / Stay Updated (4 cols) */}
-            <div className="md:col-span-4 space-y-3.5">
-              <h4 className="font-bold text-[11px] text-slate-800 tracking-wider uppercase">Stay Updated</h4>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Dapatkan pembaruan sistem dan info digitalisasi koperasi nasional.
-              </p>
-              <form onSubmit={(e) => e.preventDefault()} className="flex items-center gap-1.5 w-full">
-                <input 
-                  type="email" 
-                  placeholder="Email Anda" 
-                  className="flex-1 rounded-full border border-slate-300 bg-white px-3.5 py-1.5 text-xs text-slate-850 focus:outline-none focus:border-[var(--primary)] w-full"
-                />
-                <button 
-                  type="submit" 
-                  className="rounded-full bg-slate-900 text-white font-bold text-xs px-3.5 py-1.5 hover:bg-slate-800 transition-colors"
-                >
-                  Kirim
-                </button>
-              </form>
-            </div>
-
-          </div>
-
-          {/* Bottom Copyright Line */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 text-[11px]">
-            <div className="flex items-center gap-3">
-              <img src={onlyLogo} alt="SIKORA" className="h-5.5 object-contain" />
-              <span>&copy; 2026 SIKORA — Sinergi Koperasi Raya. Hak Cipta Dilindungi.</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="flex gap-2.5 items-center">
-                <span className="text-slate-400">Powered by</span>
-                <img src={nirmatechLogo} alt="NIRMATECH" className="-my-4 h-[96px] object-contain opacity-95 hover:opacity-100 transition-opacity" />
-              </div>
+      <footer className="w-full py-12 mt-20 border-t border-slate-100 bg-white text-slate-500 text-xs font-sans relative z-10">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="flex flex-col gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               
-              {/* Social Media Icons (Saudara.ai Style with inline SVGs) */}
-              <div className="flex items-center gap-3 text-slate-400">
-                <a 
-                  href="#" 
-                  onClick={(e) => e.preventDefault()}
-                  className="hover:text-slate-900 transition-colors"
-                  title="Twitter / X"
-                >
-                  <svg className="size-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
-                <a 
-                  href="https://www.instagram.com/nirmatech/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-slate-900 transition-colors"
-                  title="Instagram"
-                >
-                  <svg className="size-4 stroke-current fill-none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                  </svg>
-                </a>
-                <a 
-                  href="https://www.linkedin.com/company/nirmala-technology/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-slate-900 transition-colors"
-                  title="LinkedIn"
-                >
-                  <svg className="size-4 stroke-current fill-none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                    <rect width="4" height="12" x="2" y="9" />
-                    <circle cx="4" cy="4" r="2" />
-                  </svg>
-                </a>
+              {/* Column 1 */}
+              <div className="md:col-span-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <img src={logoInvert} alt="SIKORA logo" className="h-16 object-contain -ml-2 -my-2" />
+                </div>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Sinergi Koperasi Raya (SIKORA) merevolusi pengelolaan koperasi desa (KDKMP). Keputusan operasional lebih cerdas, aman, dan terintegrasi secara nasional.
+                </p>
+                <p className="text-xs text-slate-400 mt-3 leading-relaxed">
+                  Indonesia
+                </p>
+              </div>
+
+              {/* Column 2 */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Fitur</h4>
+                <div className="flex flex-col gap-2">
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#fitur">API Simkopdes</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#fitur">AI DSS Engine</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#fitur">Kasir Offline POS</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#fitur">Derived Reporting</a>
+                </div>
+              </div>
+
+              {/* Column 3 */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Perusahaan</h4>
+                <div className="flex flex-col gap-2">
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#">Tentang Kami</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#">Kebijakan Privasi</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#">Syarat & Ketentuan</a>
+                  <a className="text-sm text-slate-600 hover:text-slate-900 transition-colors" href="#">Hubungi Kami</a>
+                </div>
+              </div>
+
+              {/* Column 4 */}
+              <div>
+                <h4 className="text-sm font-semibold text-slate-900 mb-3">Stay Updated</h4>
+                <p className="text-sm text-slate-600 mb-2">Dapatkan pembaruan sistem dan info digitalisasi koperasi nasional.</p>
+                <form className="flex flex-col gap-1.5 w-full max-w-sm" onSubmit={(e) => e.preventDefault()}>
+                  <div className="flex gap-2 w-full">
+                    <div className="relative flex-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-mail absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>
+                      <input type="email" className="flex h-10 w-full border bg-background px-3 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-9 pr-3 py-2 text-sm rounded-full border-slate-350 focus:border-slate-500 focus:ring-slate-500" placeholder="Email Anda" />
+                    </div>
+                    <button className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors border bg-slate-900 text-white hover:bg-slate-800 h-10 rounded-full px-4 text-sm cursor-pointer border-0" type="submit">Kirim</button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 px-3">Hanya email aktif ritel.</p>
+                </form>
+              </div>
+
+            </div>
+
+            {/* Bottom Row */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-100">
+              <p className="text-sm text-slate-500">&copy; 2026 SIKORA — Sinergi Koperasi Raya. Hak Cipta Dilindungi.</p>
+              
+              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                <div className="flex gap-2.5 items-center">
+                  <span className="text-slate-400">Powered by</span>
+                  <img src={nirmatechLogo} alt="NIRMATECH" className="-my-4 h-[96px] object-contain opacity-95 hover:opacity-100 transition-opacity" />
+                </div>
+                
+                <div className="flex items-center gap-3 text-slate-400">
+                  <a 
+                    href="#" 
+                    onClick={(e) => e.preventDefault()}
+                    className="hover:text-slate-900 transition-colors"
+                    title="Twitter / X"
+                  >
+                    <svg className="size-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/nirmatech/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 transition-colors"
+                    title="Instagram"
+                  >
+                    <svg className="size-4 stroke-current fill-none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                    </svg>
+                  </a>
+                  <a 
+                    href="https://www.linkedin.com/company/nirmala-technology/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 transition-colors"
+                    title="LinkedIn"
+                  >
+                    <svg className="size-4 stroke-current fill-none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                      <rect width="4" height="12" x="2" y="9" />
+                      <circle cx="4" cy="4" r="2" />
+                    </svg>
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
 
+          </div>
         </div>
       </footer>
 
