@@ -66,15 +66,27 @@ export function LandingPage() {
   const [faqOpen, setFaqOpen] = useState<number[]>([])
   const [scrollProgress, setScrollProgress] = useState(0)
 
-  // Track page scroll to animate timeline progress line
+  // Track page scroll relative to timeline viewport to animate timeline progress line
   useEffect(() => {
     const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight
-      if (totalHeight > 0) {
-        setScrollProgress(window.scrollY / totalHeight)
+      const timelineEl = document.getElementById("cara-kerja")
+      if (timelineEl) {
+        const rect = timelineEl.getBoundingClientRect()
+        const height = rect.height
+        const triggerStart = window.innerHeight * 0.75
+        const triggerEnd = window.innerHeight * 0.25
+        const totalDist = height + (triggerStart - triggerEnd)
+        const scrolledDist = triggerStart - rect.top
+        
+        let progress = scrolledDist / totalDist
+        if (progress < 0) progress = 0
+        if (progress > 1) progress = 1
+        
+        setScrollProgress(progress)
       }
     }
     window.addEventListener("scroll", handleScroll)
+    handleScroll() // Trigger on mount to check initial scroll
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -648,9 +660,9 @@ export function LandingPage() {
                 </div>
                 
                 <div className="bg-slate-50 border-t border-slate-100 -mx-6 -mb-6 h-[160px] flex items-center justify-center relative overflow-hidden">
-                  <div className="w-full scale-90 translate-y-3">
-                    <div aria-hidden="true" className="relative h-28 flex items-center justify-center">
-                      <div className="rounded-xl border text-card-foreground shadow-sm aspect-video w-4/5 translate-y-4 p-3 bg-white border-slate-200">
+                  <div className="w-full scale-90">
+                    <div aria-hidden="true" className="relative h-24 flex items-center justify-center">
+                      <div className="rounded-xl border text-card-foreground shadow-sm aspect-video w-4/5 p-3 bg-white border-slate-200">
                         <div className="mb-2 flex items-center gap-1.5">
                           <div className="bg-blue-600 w-4 h-4 rounded-full flex items-center justify-center shrink-0">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-2.5 text-white"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -665,9 +677,9 @@ export function LandingPage() {
                         <div className="mt-2 text-[9px] text-slate-400 font-medium">Performa Transaksi Wilayah</div>
                       </div>
                       
-                      <div className="rounded-xl border text-card-foreground shadow-sm absolute -top-4 right-4 flex w-12 h-12 bg-white border-slate-200">
-                        <div className="bg-emerald-50 m-auto flex w-8 h-8 rounded-full border border-emerald-100">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-emerald-600 m-auto size-3.5"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
+                      <div className="rounded-xl border text-card-foreground shadow-sm absolute -top-3 right-4 flex w-10 h-10 bg-white border-slate-200">
+                        <div className="bg-emerald-50 m-auto flex w-6.5 h-6.5 rounded-full border border-emerald-100">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="stroke-emerald-600 m-auto size-3"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
                         </div>
                       </div>
                     </div>
@@ -686,8 +698,8 @@ export function LandingPage() {
                   </p>
                 </div>
                 
-                <div className="bg-slate-50 border-t border-slate-100 -mx-6 -mb-6 h-[160px] flex items-end justify-center relative overflow-hidden">
-                  <svg className="w-full h-[120px] translate-y-1" viewBox="0 0 380 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                <div className="bg-slate-50 border-t border-slate-100 -mx-6 -mb-6 h-[160px] flex items-center justify-center relative overflow-hidden">
+                  <svg className="w-full h-[110px]" viewBox="0 0 380 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
                     <defs>
                       <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
                         <path d="M 40 0 L 0 0 0 20" fill="none" stroke="rgba(148, 163, 184, 0.08)" strokeWidth="1" />
@@ -740,7 +752,7 @@ export function LandingPage() {
                 </div>
                 
                 <div className="bg-slate-50 border-t border-slate-100 -mx-6 -mb-6 h-[160px] flex items-center justify-center relative overflow-hidden">
-                  <div className="w-full scale-90 translate-y-2">
+                  <div className="w-full scale-90">
                     <div className="rounded-xl border text-card-foreground shadow-sm p-3 bg-white border-slate-200">
                       <div className="w-fit flex items-center gap-1.5 mb-2.5">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4 fill-blue-500/20 stroke-[var(--primary)]"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
@@ -1072,7 +1084,7 @@ export function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
               <div className="flex gap-2.5 items-center">
                 <span className="text-slate-400">Powered by</span>
-                <img src={nirmatechLogo} alt="NIRMATECH" className="h-[52px] object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                <img src={nirmatechLogo} alt="NIRMATECH" className="h-[96px] object-contain opacity-95 hover:opacity-100 transition-opacity" />
               </div>
               
               {/* Social Media Icons (Saudara.ai Style with inline SVGs) */}
