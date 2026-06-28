@@ -9,6 +9,7 @@ import { Pembukuan } from "@/pages/Pembukuan"
 import { Keanggotaan } from "@/pages/Keanggotaan"
 import { Monitoring } from "@/pages/Monitoring"
 import { Stub } from "@/pages/Stub"
+import { DatabaseKoperasi } from "@/pages/DatabaseKoperasi"
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/pos" element={<Pos />} />
           <Route path="/pembukuan" element={<Pembukuan />} />
           <Route path="/keanggotaan" element={<Keanggotaan />} />
+          <Route path="/database-koperasi" element={<DatabaseKoperasi />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/pengaturan" element={<Stub title="Pengaturan" />} />
           <Route path="/bantuan" element={<Stub title="Bantuan" />} />

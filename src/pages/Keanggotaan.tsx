@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Calendar,
   UserCheck,
+  Users,
   Phone,
   Search,
   ChevronDown,
@@ -407,9 +408,15 @@ function makeInitialNodes(): Record<string, NodePhysics> {
   return nodes
 }
 
-// ---  Pure-SVG force-directed network graph component ---
-// Uses direct DOM mutation (no React state updates during animation)
-// so it achieves smooth 60fps without any React re-render overhead.
+// ─────────────────────────────────────────────────────────────────────────────
+// ForceGraph — inspired by:
+//   obsidian-extended-graph (dept hulls, rich hover tooltip, node coloring)
+//   obsidian-living-graph   (animated edge flow / particle stream)
+//   juggl + graph-pro       (zoom/pan, bezier edges, compound hull groups)
+//   custom-node-size        (size by hierarchy level / connectivity)
+//   Graph-Link-Types        (edge type annotation)
+// ─────────────────────────────────────────────────────────────────────────────
+
 function ForceGraph({
   members,
   links,
@@ -423,79 +430,116 @@ function ForceGraph({
   onSelectId: (id: string) => void
   filterFn: (m: Member) => boolean
 }) {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const nodesRef = useRef<Record<string, NodePhysics>>(makeInitialNodes())
-  const lineRefs = useRef<Record<string, SVGLineElement | null>>({})
-  const circleGroupRefs = useRef<Record<string, SVGGElement | null>>({})
-  const draggingRef = useRef<string | null>(null)
+  const svgRef        = useRef<SVGSVGElement>(null)
+  const viewGroupRef  = useRef<SVGGElement | null>(null)
+  const nodesRef      = useRef<Record<string, NodePhysics>>(makeInitialNodes())
+  const pathRefs      = useRef<Record<string, SVGPathElement | null>>({})
+  const nodeGroupRefs = useRef<Record<string, SVGGElement | null>>({})
+  const hullRefs      = useRef<Record<string, SVGEllipseElement | null>>({})
+
+  const draggingRef   = useRef<string | null>(null)
+  const pinnedRef     = useRef<Set<string>>(new Set())
+  const isPanRef      = useRef(false)
+  const panStartRef   = useRef({ cx: 0, cy: 0, vx: 0, vy: 0 })
+  const viewRef       = useRef({ x: 0, y: 0, scale: 1 })
+  const dashRef       = useRef(0)   // animated edge flow counter
   const selectedIdRef = useRef(selectedId)
-  const filterFnRef = useRef(filterFn)
+  const filterFnRef   = useRef(filterFn)
 
-  // Keep refs in sync with props without re-triggering the animation loop
+  // Hover tooltip state (React state only for tooltip, not for physics)
+  const [hovered, setHovered] = useState<{ id: string; sx: number; sy: number } | null>(null)
+
   useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
-  useEffect(() => { filterFnRef.current = filterFn }, [filterFn])
+  useEffect(() => { filterFnRef.current   = filterFn   }, [filterFn])
 
-  // Reset physics when mounted
-  useEffect(() => {
-    nodesRef.current = makeInitialNodes()
-  }, [])
+  useEffect(() => { nodesRef.current = makeInitialNodes() }, [])
 
-  // Single animation loop — runs once, mutates DOM directly
+  // ── Apply zoom/pan transform to view group ──────────────────────────────
+  const applyView = () => {
+    const g = viewGroupRef.current
+    if (!g) return
+    const v = viewRef.current
+    g.setAttribute("transform", `translate(${v.x},${v.y}) scale(${v.scale})`)
+  }
+
+  // ── Bezier path helper (obsidian-extended-graph / graph-pro style) ──────
+  const bezierD = (ax: number, ay: number, bx: number, by: number, curve = 0.22) => {
+    const mx = (ax + bx) / 2, my = (ay + by) / 2
+    const dx = bx - ax, dy = by - ay
+    const len = Math.sqrt(dx * dx + dy * dy) || 1
+    const ox = (-dy / len) * len * curve
+    const oy = ( dx / len) * len * curve
+    return `M ${ax},${ay} Q ${mx + ox},${my + oy} ${bx},${by}`
+  }
+
+  // ── Hull (convex cluster blob) updater — inspired by juggl compound nodes
+  const updateHulls = (ns: Record<string, NodePhysics>) => {
+    const deptNodes: Record<string, NodePhysics[]> = {}
+    for (const m of members) {
+      if (!deptNodes[m.dept]) deptNodes[m.dept] = []
+      const n = ns[m.id]; if (n) deptNodes[m.dept].push(n)
+    }
+    for (const [dept, nodes] of Object.entries(deptNodes)) {
+      const el = hullRefs.current[dept]
+      if (!el || nodes.length === 0) continue
+      const cx = nodes.reduce((s, n) => s + n.x, 0) / nodes.length
+      const cy = nodes.reduce((s, n) => s + n.y, 0) / nodes.length
+      let rx = 0, ry = 0
+      for (const n of nodes) {
+        rx = Math.max(rx, Math.abs(n.x - cx) + n.r + 28)
+        ry = Math.max(ry, Math.abs(n.y - cy) + n.r + 28)
+      }
+      el.setAttribute("cx", String(cx))
+      el.setAttribute("cy", String(cy))
+      el.setAttribute("rx", String(Math.max(rx, 42)))
+      el.setAttribute("ry", String(Math.max(ry, 42)))
+    }
+  }
+
+  // ── Main physics + render loop ──────────────────────────────────────────
   useEffect(() => {
     let raf: number
-
-    // Well-tuned physics constants
-    const REPEL   = 4500   // Coulomb repulsion strength
-    const SPRING  = 0.035  // Hooke spring stiffness
-    const REST    = 120    // Spring resting length
-    const GRAVITY = 0.008  // Pull toward canvas centre
-    const DAMP    = 0.78   // Velocity damping (lower = settles faster)
-    const MAX_V   = 8      // Speed cap to prevent explosions
-    const MARGIN  = 36     // Canvas edge buffer
+    const REPEL = 5000, SPRING = 0.032, REST = 115
+    const GRAVITY = 0.007, DAMP = 0.76, MAX_V = 9, MARGIN = 40
 
     const tick = () => {
-      const ns = nodesRef.current
+      const ns   = nodesRef.current
       const keys = Object.keys(ns)
 
-      // --- 1. Pairwise Coulomb repulsion ---
+      // 1. Pairwise repulsion (Coulomb)
       for (let i = 0; i < keys.length; i++) {
         for (let j = i + 1; j < keys.length; j++) {
           const a = ns[keys[i]], b = ns[keys[j]]
-          const dx = b.x - a.x
-          const dy = b.y - a.y
-          const dist2 = dx * dx + dy * dy
-          const dist  = Math.sqrt(dist2) || 0.01
-          const minD  = a.r + b.r + 20
-          if (dist < 300) {
-            const f = REPEL / (dist2 + 100)
-            const nx = dx / dist, ny = dy / dist
+          const dx = b.x - a.x, dy = b.y - a.y
+          const d2 = dx * dx + dy * dy
+          const d  = Math.sqrt(d2) || 0.01
+          const minD = a.r + b.r + 18
+          if (d < 320) {
+            const f = REPEL / (d2 + 80)
+            const nx = dx / d, ny = dy / d
             a.vx -= nx * f; a.vy -= ny * f
             b.vx += nx * f; b.vy += ny * f
-            // Hard overlap separation
-            if (dist < minD) {
-              const push = (minD - dist) * 0.5
-              a.x -= nx * push; a.y -= ny * push
-              b.x += nx * push; b.y += ny * push
+            if (d < minD) {
+              const p = (minD - d) * 0.45
+              a.x -= nx * p; a.y -= ny * p
+              b.x += nx * p; b.y += ny * p
             }
           }
         }
       }
 
-      // --- 2. Hooke spring attraction along links ---
+      // 2. Spring attraction (Hooke)
       for (const { source, target } of links) {
         const a = ns[source], b = ns[target]
         if (!a || !b) continue
-        const dx = b.x - a.x
-        const dy = b.y - a.y
-        const dist = Math.sqrt(dx * dx + dy * dy) || 0.01
-        const delta = dist - REST
-        const f = SPRING * delta
-        const nx = dx / dist, ny = dy / dist
-        a.vx += nx * f; a.vy += ny * f
-        b.vx -= nx * f; b.vy -= ny * f
+        const dx = b.x - a.x, dy = b.y - a.y
+        const d  = Math.sqrt(dx * dx + dy * dy) || 0.01
+        const f  = SPRING * (d - REST)
+        a.vx += (dx / d) * f; a.vy += (dy / d) * f
+        b.vx -= (dx / d) * f; b.vy -= (dy / d) * f
       }
 
-      // --- 3. Gravity pull to canvas centre ---
+      // 3. Gravity to centre
       const cx = GW / 2, cy = GH / 2
       for (const k of keys) {
         const n = ns[k]
@@ -503,205 +547,341 @@ function ForceGraph({
         n.vy += (cy - n.y) * GRAVITY
       }
 
-      // --- 4. Integrate + clamp ---
+      // 4. Integrate + bounds
       for (const k of keys) {
         const n = ns[k]
-        if (k === draggingRef.current) continue
-        // Clamp velocity
-        const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy)
-        if (speed > MAX_V) { n.vx = (n.vx / speed) * MAX_V; n.vy = (n.vy / speed) * MAX_V }
+        if (k === draggingRef.current || pinnedRef.current.has(k)) continue
+        const spd = Math.sqrt(n.vx * n.vx + n.vy * n.vy)
+        if (spd > MAX_V) { n.vx = (n.vx / spd) * MAX_V; n.vy = (n.vy / spd) * MAX_V }
         n.x += n.vx; n.y += n.vy
-        n.vx *= DAMP;  n.vy *= DAMP
-        // Boundary bounce
+        n.vx *= DAMP; n.vy *= DAMP
         const lo = MARGIN + n.r, hiX = GW - MARGIN - n.r, hiY = GH - MARGIN - n.r
-        if (n.x < lo)  { n.x = lo;  n.vx =  Math.abs(n.vx) * 0.4 }
-        if (n.x > hiX) { n.x = hiX; n.vx = -Math.abs(n.vx) * 0.4 }
-        if (n.y < lo)  { n.y = lo;  n.vy =  Math.abs(n.vy) * 0.4 }
-        if (n.y > hiY) { n.y = hiY; n.vy = -Math.abs(n.vy) * 0.4 }
+        if (n.x < lo)  { n.x = lo;  n.vx =  Math.abs(n.vx) * 0.35 }
+        if (n.x > hiX) { n.x = hiX; n.vx = -Math.abs(n.vx) * 0.35 }
+        if (n.y < lo)  { n.y = lo;  n.vy =  Math.abs(n.vy) * 0.35 }
+        if (n.y > hiY) { n.y = hiY; n.vy = -Math.abs(n.vy) * 0.35 }
       }
 
-      // --- 5. Direct DOM mutation — ZERO React state updates ---
-      // Update SVG lines
+      // 5. Edge flow animation (obsidian-living-graph style)
+      dashRef.current -= 0.6
+
+      // 6. DOM mutations — zero React state
       for (const { source, target } of links) {
-        const el = lineRefs.current[`${source}-${target}`]
+        const el = pathRefs.current[`${source}-${target}`]
         if (!el) continue
         const a = ns[source], b = ns[target]
-        el.setAttribute("x1", String(a.x))
-        el.setAttribute("y1", String(a.y))
-        el.setAttribute("x2", String(b.x))
-        el.setAttribute("y2", String(b.y))
+        el.setAttribute("d", bezierD(a.x, a.y, b.x, b.y))
+        el.setAttribute("stroke-dashoffset", String(dashRef.current))
       }
-      // Update node group positions
       for (const k of keys) {
-        const g = circleGroupRefs.current[k]
+        const g = nodeGroupRefs.current[k]
         if (!g) continue
         g.setAttribute("transform", `translate(${ns[k].x},${ns[k].y})`)
       }
+
+      // 7. Hull blobs (juggl compound node style)
+      updateHulls(ns)
 
       raf = requestAnimationFrame(tick)
     }
 
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [links])
+  }, [links]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Drag handlers (pointer events on the SVG element itself)
+  // ── Zoom via scroll wheel ────────────────────────────────────────────────
+  const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+    e.preventDefault()
+    const v   = viewRef.current
+    const fac = e.deltaY < 0 ? 1.12 : 0.89
+    const ns  = Math.max(0.25, Math.min(4, v.scale * fac))
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const mx = e.clientX - rect.left
+    const my = e.clientY - rect.top
+    viewRef.current = {
+      x: mx - (mx - v.x) * (ns / v.scale),
+      y: my - (my - v.y) * (ns / v.scale),
+      scale: ns,
+    }
+    applyView()
+  }
+
+  // ── Pointer interactions ─────────────────────────────────────────────────
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    const target = e.target as SVGElement
-    const gEl = target.closest<SVGGElement>("[data-node-id]")
-    if (!gEl) return
-    const id = gEl.dataset.nodeId!
-    draggingRef.current = id
-    onSelectId(id)
-    ;(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId)
+    const gEl = (e.target as SVGElement).closest<SVGGElement>("[data-node-id]")
+    if (gEl) {
+      const id = gEl.dataset.nodeId!
+      draggingRef.current = id
+      onSelectId(id)
+    } else {
+      isPanRef.current = true
+      panStartRef.current = { cx: e.clientX, cy: e.clientY, vx: viewRef.current.x, vy: viewRef.current.y }
+    }
+    svgRef.current?.setPointerCapture(e.pointerId)
   }
 
   const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (!draggingRef.current || !svgRef.current) return
-    const rect = svgRef.current.getBoundingClientRect()
-    const scaleX = GW / rect.width
-    const scaleY = GH / rect.height
-    const n = nodesRef.current[draggingRef.current]
-    if (!n) return
-    n.x = Math.max(n.r + 4, Math.min(GW - n.r - 4, (e.clientX - rect.left) * scaleX))
-    n.y = Math.max(n.r + 4, Math.min(GH - n.r - 4, (e.clientY - rect.top)  * scaleY))
-    n.vx = 0; n.vy = 0
+    if (draggingRef.current && svgRef.current) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const v = viewRef.current
+      const x = ((e.clientX - rect.left) - v.x) / v.scale
+      const y = ((e.clientY - rect.top)  - v.y) / v.scale
+      const n = nodesRef.current[draggingRef.current]
+      if (n) { n.x = x; n.y = y; n.vx = 0; n.vy = 0 }
+    } else if (isPanRef.current) {
+      const p = panStartRef.current
+      viewRef.current.x = p.vx + (e.clientX - p.cx)
+      viewRef.current.y = p.vy + (e.clientY - p.cy)
+      applyView()
+    }
   }
 
-  const handlePointerUp = () => { draggingRef.current = null }
+  const handlePointerUp = () => {
+    draggingRef.current = null
+    isPanRef.current    = false
+  }
+
+  // ── Pin node on double-click (obsidian-extended-graph pin feature) ───────
+  const handleDoubleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    const gEl = (e.target as SVGElement).closest<SVGGElement>("[data-node-id]")
+    if (!gEl) return
+    const id = gEl.dataset.nodeId!
+    if (pinnedRef.current.has(id)) pinnedRef.current.delete(id)
+    else pinnedRef.current.add(id)
+  }
+
+  // ── Hover tooltip handlers ───────────────────────────────────────────────
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const gEl = (e.target as SVGElement).closest<SVGGElement>("[data-node-id]")
+    if (gEl) {
+      const id = gEl.dataset.nodeId!
+      const rect = svgRef.current?.getBoundingClientRect()
+      if (rect) setHovered({ id, sx: e.clientX - rect.left, sy: e.clientY - rect.top })
+    } else {
+      setHovered(null)
+    }
+  }
 
   const memberMap = Object.fromEntries(members.map((m) => [m.id, m]))
+  const hovMember = hovered ? memberMap[hovered.id] : null
+
+  // Unique departments for hull rendering
+  const depts = Array.from(new Set(members.map((m) => m.dept)))
 
   return (
-    <svg
-      ref={svgRef}
-      viewBox={`0 0 ${GW} ${GH}`}
-      className="w-full h-full"
-      style={{ touchAction: "none", cursor: draggingRef.current ? "grabbing" : "grab" }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
-    >
-      <defs>
-        {/* Radial glow filter */}
-        <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        <filter id="glow-strong" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="7" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        {/* Subtle background dots grid */}
-        <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-          <circle cx="2" cy="2" r="1" fill="#e2e8f0" />
-        </pattern>
-        {/* Gradient defs for links */}
-        {links.map(({ source, target }) => {
-          const sm = memberMap[source], tm = memberMap[target]
-          if (!sm || !tm) return null
-          const id = `lg-${source}-${target}`
-          return (
-            <linearGradient key={id} id={id} gradientUnits="userSpaceOnUse"
-              x1={nodesRef.current[source]?.x ?? 0} y1={nodesRef.current[source]?.y ?? 0}
-              x2={nodesRef.current[target]?.x ?? 0} y2={nodesRef.current[target]?.y ?? 0}
-            >
-              <stop offset="0%"  stopColor={DEPT_COLOR[sm.dept] ?? "#94a3b8"} stopOpacity="0.7" />
-              <stop offset="100%" stopColor={DEPT_COLOR[tm.dept] ?? "#94a3b8"} stopOpacity="0.35" />
-            </linearGradient>
-          )
-        })}
-      </defs>
+    <div className="relative w-full h-full">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${GW} ${GH}`}
+        className="w-full h-full"
+        style={{ touchAction: "none", cursor: isPanRef.current ? "move" : draggingRef.current ? "grabbing" : "default" }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        onDoubleClick={handleDoubleClick}
+        onWheel={handleWheel}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHovered(null)}
+      >
+        <defs>
+          <filter id="glow"  x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="b" />
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow2" x="-70%" y="-70%" width="240%" height="240%">
+            <feGaussianBlur stdDeviation="8" result="b" />
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          {/* Hull blur filter for soft dept blob edges */}
+          <filter id="hull-blur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="14" />
+          </filter>
+          <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="1.5" cy="1.5" r="1" fill="#dde3ee" />
+          </pattern>
+          {/* Edge gradient defs */}
+          {links.map(({ source, target }) => {
+            const sm = memberMap[source], tm = memberMap[target]
+            if (!sm || !tm) return null
+            const gid = `eg-${source}-${target}`
+            const initA = nodesRef.current[source]
+            const initB = nodesRef.current[target]
+            return (
+              <linearGradient key={gid} id={gid} gradientUnits="userSpaceOnUse"
+                x1={initA?.x ?? GW/2} y1={initA?.y ?? GH/2}
+                x2={initB?.x ?? GW/2} y2={initB?.y ?? GH/2}
+              >
+                <stop offset="0%"   stopColor={DEPT_COLOR[sm.dept] ?? "#94a3b8"} stopOpacity="0.85"/>
+                <stop offset="100%" stopColor={DEPT_COLOR[tm.dept] ?? "#94a3b8"} stopOpacity="0.35"/>
+              </linearGradient>
+            )
+          })}
+        </defs>
 
-      {/* Background grid */}
-      <rect width={GW} height={GH} fill="url(#dots)" rx="16" opacity="0.5" />
+        {/* Background */}
+        <rect width={GW} height={GH} fill="url(#dots)" rx="14" opacity="0.6"/>
+        {[70, 155, 245].map((r) => (
+          <circle key={r} cx={GW/2} cy={GH/2} r={r}
+            fill="none" stroke="#dde3ee" strokeWidth="1"
+            opacity="0.5" strokeDasharray="5 7"/>
+        ))}
 
-      {/* Subtle concentric rings from centre */}
-      {[80, 160, 250].map((r) => (
-        <circle key={r} cx={GW / 2} cy={GH / 2} r={r}
-          fill="none" stroke="#e2e8f0" strokeWidth="1" opacity="0.5" strokeDasharray="4 6" />
-      ))}
+        {/* ── Department hull blobs (juggl / obsidian-extended-graph) ── */}
+        <g>
+          {depts.map((dept) => {
+            const color  = DEPT_COLOR[dept] ?? "#94a3b8"
+            const init   = nodesRef.current
+            const mNodes = members.filter((m) => m.dept === dept).map((m) => init[m.id]).filter(Boolean)
+            if (mNodes.length === 0) return null
+            const cx = mNodes.reduce((s, n) => s + n!.x, 0) / mNodes.length
+            const cy = mNodes.reduce((s, n) => s + n!.y, 0) / mNodes.length
+            return (
+              <ellipse
+                key={dept}
+                ref={(el) => { hullRefs.current[dept] = el }}
+                cx={cx} cy={cy} rx={60} ry={50}
+                fill={color}
+                opacity={0.06}
+                filter="url(#hull-blur)"
+              />
+            )
+          })}
+        </g>
 
-      {/* Links — refs updated directly by physics loop */}
-      {links.map(({ source, target }) => {
-        const sm = memberMap[source]
-        if (!sm) return null
-        const matchesBoth = filterFnRef.current(sm) && filterFnRef.current(memberMap[target])
-        const initA = nodesRef.current[source]
-        const initB = nodesRef.current[target]
-        const isMajor = source === "m1"
-        return (
-          <line
-            key={`${source}-${target}`}
-            ref={(el) => { lineRefs.current[`${source}-${target}`] = el }}
-            x1={initA?.x ?? GW / 2} y1={initA?.y ?? GH / 2}
-            x2={initB?.x ?? GW / 2} y2={initB?.y ?? GH / 2}
-            stroke={`url(#lg-${source}-${target})`}
-            strokeWidth={isMajor ? 2.5 : 1.5}
-            strokeLinecap="round"
-            opacity={matchesBoth ? (isMajor ? 0.9 : 0.65) : 0.1}
-            style={{ transition: "opacity 0.3s" }}
-          />
-        )
-      })}
+        {/* ── Main content group (zoom/pan via viewRef) ── */}
+        <g ref={viewGroupRef}>
+          {/* ── Bezier edges with animated flow (obsidian-living-graph) ── */}
+          {links.map(({ source, target }) => {
+            const sm = memberMap[source]
+            if (!sm) return null
+            const matchesBoth = filterFnRef.current(sm) && filterFnRef.current(memberMap[target])
+            const initA = nodesRef.current[source]
+            const initB = nodesRef.current[target]
+            const isMajor = source === "m1"
+            const key = `${source}-${target}`
+            const initD = bezierD(initA?.x ?? GW/2, initA?.y ?? GH/2, initB?.x ?? GW/2, initB?.y ?? GH/2)
+            // Edge flow: dashed animated path drawn over solid path
+            return (
+              <g key={key}>
+                {/* Solid base path */}
+                <path
+                  d={initD}
+                  fill="none"
+                  stroke={`url(#eg-${key})`}
+                  strokeWidth={isMajor ? 2.2 : 1.4}
+                  strokeLinecap="round"
+                  opacity={matchesBoth ? (isMajor ? 0.7 : 0.45) : 0.08}
+                  style={{ transition: "opacity 0.35s" }}
+                />
+                {/* Animated flow dashes over the top (living-graph style) */}
+                <path
+                  ref={(el) => { pathRefs.current[key] = el }}
+                  d={initD}
+                  fill="none"
+                  stroke={DEPT_COLOR[sm.dept] ?? "#94a3b8"}
+                  strokeWidth={isMajor ? 2 : 1.2}
+                  strokeLinecap="round"
+                  strokeDasharray={isMajor ? "6 18" : "4 16"}
+                  strokeDashoffset={dashRef.current}
+                  opacity={matchesBoth ? (isMajor ? 0.55 : 0.3) : 0.04}
+                  style={{ transition: "opacity 0.35s" }}
+                />
+              </g>
+            )
+          })}
 
-      {/* Nodes — each is an SVG <g> whose transform is mutated directly */}
-      {members.map((m) => {
-        const initN = nodesRef.current[m.id]
-        const isSelected = m.id === selectedIdRef.current
-        const matches = filterFnRef.current(m)
-        const color = DEPT_COLOR[m.dept] ?? "#94a3b8"
-        const r = initN?.r ?? 17
-        const fontSize = r > 25 ? 9 : 7.5
+          {/* ── Nodes ── */}
+          {members.map((m) => {
+            const initN = nodesRef.current[m.id]
+            const isSelected = m.id === selectedIdRef.current
+            const isPinned   = pinnedRef.current.has(m.id)
+            const matches    = filterFnRef.current(m)
+            const color      = DEPT_COLOR[m.dept] ?? "#94a3b8"
+            const r          = initN?.r ?? 17
+            const lblSize    = r > 28 ? 9.5 : r > 20 ? 8 : 7
 
-        return (
-          <g
-            key={m.id}
-            ref={(el) => { circleGroupRefs.current[m.id] = el }}
-            data-node-id={m.id}
-            transform={`translate(${initN?.x ?? GW / 2},${initN?.y ?? GH / 2})`}
-            style={{ cursor: "grab", opacity: matches ? 1 : 0.12, transition: "opacity 0.3s" }}
-          >
-            {/* Outer glow ring for selected */}
-            {isSelected && (
-              <circle r={r + 10} fill={color} opacity={0.18} filter="url(#glow-strong)" />
-            )}
-            {/* Department colour aura */}
-            <circle r={r + 4} fill={color} opacity={matches ? 0.15 : 0.04} />
-            {/* Department ring */}
-            <circle r={r + 2} fill="none" stroke={color}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-              opacity={matches ? 0.8 : 0.2}
-              filter={isSelected ? "url(#glow)" : undefined}
+            return (
+              <g
+                key={m.id}
+                ref={(el) => { nodeGroupRefs.current[m.id] = el }}
+                data-node-id={m.id}
+                transform={`translate(${initN?.x ?? GW/2},${initN?.y ?? GH/2})`}
+                style={{ cursor: "grab", opacity: matches ? 1 : 0.1, transition: "opacity 0.3s" }}
+              >
+                {/* Selected outer glow (obsidian-extended-graph selection ring) */}
+                {isSelected && (
+                  <circle r={r + 12} fill={color} opacity={0.2} filter="url(#glow2)"/>
+                )}
+                {/* Dept aura soft fill */}
+                <circle r={r + 5} fill={color} opacity={matches ? 0.14 : 0.03}/>
+                {/* Dept ring stroke */}
+                <circle r={r + 2.5} fill="none" stroke={color}
+                  strokeWidth={isSelected ? 3 : 1.8}
+                  opacity={matches ? (isSelected ? 1 : 0.7) : 0.15}
+                  filter={isSelected ? "url(#glow)" : undefined}
+                />
+                {/* White disc background */}
+                <circle r={r} fill="white" stroke="#e2e8f0" strokeWidth="1.5"/>
+                {/* Avatar image */}
+                <clipPath id={`c-${m.id}`}><circle r={r - 1.5}/></clipPath>
+                <image
+                  href={m.avatar}
+                  x={-(r - 1.5)} y={-(r - 1.5)}
+                  width={(r - 1.5) * 2} height={(r - 1.5) * 2}
+                  clipPath={`url(#c-${m.id})`}
+                  preserveAspectRatio="xMidYMid slice"
+                  style={{ pointerEvents: "none" }}
+                />
+                {/* Pin indicator (obsidian-extended-graph pin) */}
+                {isPinned && (
+                  <circle cx={r - 3} cy={-(r - 3)} r={5}
+                    fill="#f59e0b" stroke="white" strokeWidth="1.5"/>
+                )}
+                {/* First-name label below node */}
+                <text
+                  y={r + 14}
+                  textAnchor="middle"
+                  fontSize={lblSize}
+                  fontWeight={isSelected ? "800" : "600"}
+                  fill={isSelected ? "#1d4ed8" : "#475569"}
+                  style={{ pointerEvents: "none", userSelect: "none", letterSpacing: "0.015em" }}
+                >
+                  {m.name.split(" ")[0]}
+                </text>
+              </g>
+            )
+          })}
+        </g>
+      </svg>
+
+      {/* ── Hover tooltip card (obsidian-extended-graph extended node info) ── */}
+      {hovMember && hovered && (
+        <div
+          className="pointer-events-none absolute z-20 flex flex-col gap-1 rounded-xl bg-slate-900/92 backdrop-blur-sm px-3 py-2.5 shadow-xl border border-white/10 text-white w-48"
+          style={{
+            left: Math.min(hovered.sx + 14, 10000),
+            top:  Math.max(hovered.sy - 64, 4),
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <span
+              className="size-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: DEPT_COLOR[hovMember.dept] ?? "#94a3b8" }}
             />
-            {/* White avatar bg */}
-            <circle r={r} fill="white" stroke="#e2e8f0" strokeWidth="1" />
-            {/* Clip avatar image */}
-            <clipPath id={`clip-${m.id}`}><circle r={r - 2} /></clipPath>
-            <image
-              href={m.avatar}
-              x={-(r - 2)} y={-(r - 2)}
-              width={(r - 2) * 2} height={(r - 2) * 2}
-              clipPath={`url(#clip-${m.id})`}
-              preserveAspectRatio="xMidYMid slice"
-              style={{ pointerEvents: "none" }}
-            />
-            {/* Name label below node */}
-            <text
-              y={r + 13}
-              textAnchor="middle"
-              fontSize={fontSize}
-              fontWeight={isSelected ? "800" : "600"}
-              fill={isSelected ? "#1e40af" : "#475569"}
-              style={{ pointerEvents: "none", userSelect: "none", letterSpacing: "0.01em" }}
-            >
-              {m.name.split(" ")[0]}
-            </text>
-          </g>
-        )
-      })}
-    </svg>
+            <span className="text-[10px] font-black truncate">{hovMember.name}</span>
+          </div>
+          <p className="text-[9px] font-semibold text-slate-300 leading-tight">{hovMember.role}</p>
+          <p className="text-[9px] text-slate-400 leading-tight">{hovMember.dept}</p>
+          <div className="mt-1 pt-1 border-t border-white/10 flex items-center gap-1.5">
+            <span className="text-[8.5px] text-slate-400">Transparansi</span>
+            <span className="ml-auto text-[9px] font-black text-emerald-400">{hovMember.transparencyScore}%</span>
+          </div>
+          <p className="text-[8px] text-slate-500 mt-0.5">Dbl-klik = pin · Scroll = zoom</p>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -768,6 +948,37 @@ export function Keanggotaan() {
         subtitle="Rekayasa transparansi tata kelola dan visualisasi jejaring sistem keanggotaan digital."
       />
 
+      {/* ── Stats Strip ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-blue-50">
+            <Users className="size-4.5 text-blue-500" />
+          </span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Anggota Teraktivasi</p>
+            <p className="text-lg font-black text-slate-800 leading-tight">2.477.207</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-50">
+            <UserCheck className="size-4.5 text-sky-500" />
+          </span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Laki-Laki</p>
+            <p className="text-lg font-black text-sky-600 leading-tight">1.487.630</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-pink-50">
+            <UserCheck className="size-4.5 text-pink-400" />
+          </span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Perempuan</p>
+            <p className="text-lg font-black text-pink-500 leading-tight">989.577</p>
+          </div>
+        </div>
+      </div>
+
       {/* Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         {/* Toggle View Mode */}
@@ -813,11 +1024,11 @@ export function Keanggotaan() {
         {/* Graph Display Area */}
         <SectionCard
           className="lg:col-span-2 min-h-[600px] flex flex-col overflow-visible"
-          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola (Physics Graph)"}
+          title={viewMode === "hierarchy" ? "Struktur Organisasi Harian" : "Jejaring Interaksi Tata Kelola"}
           subtitle={
             viewMode === "hierarchy"
               ? "Menampilkan jalur kepemimpinan dan penugasan divisi"
-              : "Tarik (drag) foto anggota menggunakan mouse untuk merasakan pergerakan elastic bubble jejaring node."
+              : "Visualisasi jejaring node interaktif · scroll untuk zoom · drag latar untuk geser · dbl-klik untuk pin"
           }
         >
           {/* Cascading Filter Controls inside card content */}
@@ -964,7 +1175,7 @@ export function Keanggotaan() {
             </div>
           ) : (
             /* --- SMOOTH PHYSICS-BASED SVG NODE GRAPH --- */
-            <div className="flex-1 relative rounded-2xl overflow-hidden bg-slate-50/30 border border-slate-100" style={{ minHeight: 420 }}>
+            <div className="flex-1 relative rounded-2xl overflow-hidden bg-slate-50/30 border border-slate-100" style={{ minHeight: 480 }}>
               <ForceGraph
                 members={MEMBERS}
                 links={LINKS}
@@ -980,10 +1191,6 @@ export function Keanggotaan() {
                     {dept.replace("Divisi ", "")}
                   </span>
                 ))}
-              </div>
-              {/* Hint */}
-              <div className="absolute top-3 right-3 text-[9.5px] font-semibold text-slate-400 pointer-events-none select-none">
-                🖱 Tarik node untuk merasakan gaya fisika
               </div>
             </div>
           )}

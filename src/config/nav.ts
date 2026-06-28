@@ -6,6 +6,7 @@ import {
   BookOpenText,
   Users,
   BarChart3,
+  Building2,
   Settings,
   HelpCircle,
   type LucideIcon,
@@ -24,6 +25,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { label: "Transaksi POS", path: "/pos", icon: ShoppingCart },
   { label: "Pembukuan", path: "/pembukuan", icon: BookOpenText },
   { label: "Keanggotaan", path: "/keanggotaan", icon: Users },
+  { label: "Kopeasi", path: "/database-koperasi", icon: Building2 },
   { label: "Monitoring", path: "/monitoring", icon: BarChart3 },
 ]
 
