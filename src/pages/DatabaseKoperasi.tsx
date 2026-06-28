@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Search,
   MapPin,
@@ -12,7 +12,13 @@ import {
   ShieldCheck,
   Store,
   Navigation,
+  LayoutGrid,
+  List,
+  Map,
 } from "lucide-react"
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
+import L from "leaflet"
+import "leaflet/dist/leaflet.css"
 import { PageHeader } from "@/components/layout/PageHeader"
 import { SectionCard } from "@/components/shared/SectionCard"
 import { Reveal } from "@/components/shared/Reveal"
@@ -281,7 +287,32 @@ const KOPERASI_DATA: Koperasi[] = [
   },
 ]
 
+const mapIcon = (isSelected: boolean) => L.divIcon({
+  className: "",
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:9999px;background:${isSelected ? '#025669' : '#fff'};color:${isSelected ? '#fff' : '#025669'};border:2px solid #025669;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></div>`
+})
+
 // ─── Helper Components ────────────────────────────────────────────────────────
+
+function MapUpdater({ data, selectedId }: { data: typeof KOPERASI_DATA, selectedId?: string | null }) {
+  const map = useMap()
+  
+  useEffect(() => {
+    if (selectedId) {
+      const selectedKop = data.find(k => k.id === selectedId)
+      if (selectedKop) {
+        map.flyTo([selectedKop.lat, selectedKop.lng], 12, { duration: 1.2 })
+      }
+    } else if (data.length > 0) {
+      const group = new L.FeatureGroup(data.map(k => L.marker([k.lat, k.lng])))
+      map.flyToBounds(group.getBounds(), { padding: [50, 50], duration: 1.2, maxZoom: 6 })
+    }
+  }, [data, selectedId, map])
+
+  return null
+}
 
 const STATUS_STYLE: Record<string, string> = {
   Aktif: "bg-emerald-100 text-emerald-700 ring-emerald-200",
@@ -548,11 +579,6 @@ function KoperasiDetail({ kop, onClose }: { kop: Koperasi; onClose: () => void }
           </a>
         </section>
       </div>
-
-      {/* Footer */}
-      <div className="bg-[#87ceeb] px-5 py-3 text-center text-xs text-slate-700">
-        Dibuat oleh <strong>Kementerian Koperasi</strong> — Program Kopdes Merah Putih
-      </div>
     </div>
   )
 }
@@ -609,6 +635,7 @@ export function DatabaseKoperasi() {
   const [search, setSearch] = useState("")
   const [provinsi, setProvinsi] = useState("Semua")
   const [status, setStatus] = useState("Semua")
+  const [viewMode, setViewMode] = useState<"card" | "table" | "map">("card")
   const [selected, setSelected] = useState<Koperasi | null>(null)
 
   const filtered = KOPERASI_DATA.filter((k) => {
@@ -659,9 +686,23 @@ export function DatabaseKoperasi() {
         </div>
       </Reveal>
 
-      {/* Filters */}
+      {/* Filters & View Toggle */}
       <Reveal>
         <SectionCard>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4 mb-4">
+            <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
+              <button onClick={() => setViewMode("card")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors", viewMode === "card" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
+                <LayoutGrid className="size-4" /> Card
+              </button>
+              <button onClick={() => setViewMode("table")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors", viewMode === "table" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
+                <List className="size-4" /> Tabel
+              </button>
+              <button onClick={() => setViewMode("map")} className={cn("flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors", viewMode === "map" ? "bg-white text-slate-800 shadow-sm" : "text-slate-500 hover:text-slate-700")}>
+                <Map className="size-4" /> Peta
+              </button>
+            </div>
+          </div>
+          
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 pointer-events-none" />
@@ -694,31 +735,83 @@ export function DatabaseKoperasi() {
         </SectionCard>
       </Reveal>
 
-      {/* Grid + Detail panel */}
+      {/* Content Area */}
       <div className="flex gap-6 items-start">
-        {/* Grid */}
-        <div className={cn("grid gap-4 transition-all", selected ? "flex-1 grid-cols-1 sm:grid-cols-2" : "flex-1 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
+        {/* Main View */}
+        <div className={cn("transition-all", selected ? "flex-1" : "w-full")}>
           {filtered.length === 0 ? (
-            <div className="col-span-full py-16 text-center text-slate-400">
+            <div className="py-16 text-center text-slate-400">
               <Building2 className="size-10 mx-auto mb-3 opacity-30" />
               <p className="font-medium">Tidak ada koperasi yang cocok</p>
               <p className="text-sm">Coba ubah kata kunci atau filter</p>
             </div>
+          ) : viewMode === "card" ? (
+            <div className={cn("grid gap-4", selected ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3")}>
+              {filtered.map((kop) => (
+                <Reveal key={kop.id}>
+                  <KoperasiCard kop={kop} onClick={() => setSelected(kop.id === selected?.id ? null : kop)} />
+                </Reveal>
+              ))}
+            </div>
+          ) : viewMode === "table" ? (
+            <div className="w-full overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Nama Koperasi</th>
+                    <th className="px-4 py-3 font-semibold">Lokasi</th>
+                    <th className="px-4 py-3 font-semibold">Provinsi</th>
+                    <th className="px-4 py-3 font-semibold text-center">Status</th>
+                    <th className="px-4 py-3 font-semibold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filtered.map(kop => (
+                    <tr key={kop.id} className={cn("transition-colors", selected?.id === kop.id ? "bg-[#025669]/5" : "hover:bg-slate-50/50")}>
+                      <td className="px-4 py-3 font-medium text-slate-800">{kop.nama}</td>
+                      <td className="px-4 py-3 text-slate-600">{kop.kecamatan}, {kop.kabupaten}</td>
+                      <td className="px-4 py-3 text-slate-600">{kop.provinsi}</td>
+                      <td className="px-4 py-3 text-center"><StatusBadge status={kop.status} /></td>
+                      <td className="px-4 py-3 text-right">
+                        <button onClick={() => setSelected(kop.id === selected?.id ? null : kop)} className="text-[#025669] font-medium hover:underline text-xs bg-[#025669]/10 px-3 py-1.5 rounded-lg">
+                          {selected?.id === kop.id ? "Tutup" : "Lihat Detail"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            filtered.map((kop) => (
-              <Reveal key={kop.id}>
-                <KoperasiCard
-                  kop={kop}
-                  onClick={() => setSelected(kop.id === selected?.id ? null : kop)}
-                />
-              </Reveal>
-            ))
+            <div className="w-full h-[600px] rounded-xl border border-slate-200 overflow-hidden shadow-sm relative z-0">
+              <MapContainer center={[-2.5, 118]} zoom={5} className="w-full h-full">
+                <MapUpdater data={filtered} selectedId={selected?.id} />
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                {filtered.map(kop => (
+                  <Marker 
+                    key={kop.id} 
+                    position={[kop.lat, kop.lng]} 
+                    icon={mapIcon(selected?.id === kop.id)}
+                    eventHandlers={{ click: () => setSelected(kop.id === selected?.id ? null : kop) }}
+                  >
+                    <Popup>
+                      <div className="font-sans min-w-[200px]">
+                        <img src={kop.foto} alt={kop.nama} className="w-full h-24 object-cover rounded-md mb-2" />
+                        <p className="font-bold text-sm mb-1 leading-snug">{kop.nama}</p>
+                        <p className="text-xs text-slate-600 mb-2">{kop.kecamatan}, {kop.kabupaten}</p>
+                        <button onClick={() => setSelected(kop)} className="text-xs bg-[#025669] text-white px-3 py-1.5 rounded-lg w-full font-medium">Lihat Selengkapnya</button>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
           )}
         </div>
 
         {/* Detail slide-in */}
         {selected && (
-          <div className="w-[420px] shrink-0 sticky top-4 self-start rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden max-h-[calc(100vh-120px)] transition-all">
+          <div className="w-[420px] shrink-0 sticky top-4 self-start rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden h-[calc(100vh-120px)] transition-all">
             <KoperasiDetail kop={selected} onClose={() => setSelected(null)} />
           </div>
         )}

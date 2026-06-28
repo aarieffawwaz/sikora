@@ -42,332 +42,227 @@ interface Member {
 }
 
 const MEMBERS: Member[] = [
+  // ── Struktur Pengurus ──────────────────────────────────────────────────
   {
     id: "m1",
-    name: "Budi Santoso",
-    role: "Ketua Koperasi",
-    dept: "Pengurus Harian",
-    avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150",
-    code: "SKJ-001",
-    joined: "12 Jan 2021",
+    name: "Yafie Irfan Hilmi",
+    role: "Ketua",
+    dept: "Pengurus",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    code: "KDKMP-001",
+    joined: "12 Mar 2020",
     status: "Aktif",
-    simpananPokok: "Rp 5.000.000",
-    simpananWajib: "Rp 250.000 / bln",
-    simpananSukarela: "Rp 12.500.000",
+    simpananPokok: "Rp 1.000.000",
+    simpananWajib: "Rp 100.000 / bln",
+    simpananSukarela: "Rp 8.500.000",
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 99,
-    phone: "+62 811-1234-567",
-    email: "budi.santoso@sikora.coop",
+    phone: "+62 812-3456-7890",
+    email: "yafie@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Sukamaju",
+    kelurahan: "Ciheulang",
     activities: [
-      "Menandatangani laporan pertanggungjawaban tahunan KDKMP",
-      "Persetujuan kemitraan rantai pasok dengan KDKMP Wilayah",
-      "Membuka rapat koordinasi bulanan pengurus",
+      "Memimpin rapat pleno tahunan KDKMP",
+      "Penandatanganan MoU kemitraan rantai pasok",
+      "Menghadiri forum koperasi nasional",
     ],
   },
   {
     id: "m2",
-    name: "Ahmad Hidayat",
-    role: "Manajer Operasional",
-    dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150",
+    name: "Mansyur Setiawan",
+    role: "Wakil Ketua Bidang Usaha",
+    dept: "Pengurus",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
     parentId: "m1",
-    code: "SKJ-002",
-    joined: "18 Feb 2021",
+    code: "KDKMP-002",
+    joined: "15 Mar 2020",
     status: "Aktif",
-    simpananPokok: "Rp 2.500.000",
-    simpananWajib: "Rp 150.000 / bln",
+    simpananPokok: "Rp 1.000.000",
+    simpananWajib: "Rp 100.000 / bln",
     simpananSukarela: "Rp 4.200.000",
     voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 97,
-    phone: "+62 812-9876-543",
-    email: "ahmad.hidayat@sikora.coop",
+    transparencyScore: 95,
+    phone: "+62 813-2345-6789",
+    email: "mansyur@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Cibiru",
+    kelurahan: "Ciheulang",
     activities: [
-      "Verifikasi pengadaan beras gerai Margahayu",
-      "Rekonsiliasi transaksi offline POS Gerai Cibiru",
-      "Pengecekan kualitas gudang logistik",
+      "Koordinasi unit simpan pinjam & ritel",
+      "Evaluasi kinerja unit usaha Q2",
     ],
   },
   {
     id: "m3",
-    name: "Siti Aminah",
-    role: "Manajer Keuangan",
-    dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150",
+    name: "Alifia Yasfar Amri",
+    role: "Wakil Ketua Bidang Anggota",
+    dept: "Pengurus",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
     parentId: "m1",
-    code: "SKJ-003",
-    joined: "05 Mar 2021",
+    code: "KDKMP-003",
+    joined: "15 Mar 2020",
     status: "Aktif",
-    simpananPokok: "Rp 2.500.000",
-    simpananWajib: "Rp 150.000 / bln",
-    simpananSukarela: "Rp 8.700.000",
+    simpananPokok: "Rp 1.000.000",
+    simpananWajib: "Rp 100.000 / bln",
+    simpananSukarela: "Rp 3.800.000",
     voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 98,
-    phone: "+62 813-4455-667",
-    email: "siti.aminah@sikora.coop",
+    transparencyScore: 94,
+    phone: "+62 857-4321-9876",
+    email: "alifia@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Margahayu",
+    kelurahan: "Ciheulang",
     activities: [
-      "Penyusunan laporan arus kas Mei 2026",
-      "Pencairan dana talangan restock sembako",
-      "Penyaluran bagi hasil SHU anggota kuartal 1",
+      "Rekrutmen anggota baru wilayah Selatan",
+      "Program literasi keuangan grassroot",
     ],
   },
   {
     id: "m4",
-    name: "Dewi Lestari",
-    role: "Manajer Kemitraan & AI",
-    dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    name: "Sonia Anjarwati",
+    role: "Sekretaris",
+    dept: "Pengurus",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
     parentId: "m1",
-    code: "SKJ-004",
-    joined: "20 Mei 2021",
+    code: "KDKMP-004",
+    joined: "16 Mar 2020",
     status: "Aktif",
-    simpananPokok: "Rp 2.500.000",
-    simpananWajib: "Rp 150.000 / bln",
-    simpananSukarela: "Rp 5.400.000",
+    simpananPokok: "Rp 1.000.000",
+    simpananWajib: "Rp 100.000 / bln",
+    simpananSukarela: "Rp 2.900.000",
     voteShare: "1.0% (Hak Setara)",
     transparencyScore: 96,
-    phone: "+62 815-2233-445",
-    email: "dewi.lestari@sikora.coop",
+    phone: "+62 821-9876-5432",
+    email: "sonia@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Sukamaju",
+    kelurahan: "Ciheulang",
     activities: [
-      "Kalibrasi model prediksi AI DSS untuk restock",
-      "Penambahan gerai sync baru di Margahayu",
-      "Sosialisasi sistem keanggotaan digital grassroot",
+      "Pengelolaan administrasi rapat pengurus",
+      "Pengarsipan dokumen digital KDKMP",
     ],
   },
   {
     id: "m5",
-    name: "Fajar Nugroho",
-    role: "Supervisor Gudang",
-    dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150",
-    parentId: "m2",
-    code: "SKJ-005",
-    joined: "10 Jun 2022",
+    name: "Novia Anggita P.",
+    role: "Bendahara",
+    dept: "Pengurus",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+    parentId: "m1",
+    code: "KDKMP-005",
+    joined: "16 Mar 2020",
     status: "Aktif",
     simpananPokok: "Rp 1.000.000",
     simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 1.800.000",
+    simpananSukarela: "Rp 5.100.000",
     voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 94,
-    phone: "+62 819-7788-990",
-    email: "fajar.nugroho@sikora.coop",
+    transparencyScore: 98,
+    phone: "+62 819-1234-5678",
+    email: "novia@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Cibiru",
+    kelurahan: "Ciheulang",
     activities: [
-      "Input barang masuk Tepung Terigu 80kg",
-      "Update status stok kaku beras premium",
+      "Rekonsiliasi laporan keuangan bulanan",
+      "Pengelolaan simpanan pokok & wajib anggota",
+    ],
+  },
+  // ── Struktur Pengawas ──────────────────────────────────────────────────
+  {
+    id: "m6",
+    name: "Rubby Nur Habibi",
+    role: "Ketua Pengawas",
+    dept: "Pengawas",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+    code: "KDKMP-006",
+    joined: "12 Mar 2020",
+    status: "Aktif",
+    simpananPokok: "Rp 1.000.000",
+    simpananWajib: "Rp 100.000 / bln",
+    simpananSukarela: "Rp 4.600.000",
+    voteShare: "1.0% (Hak Setara)",
+    transparencyScore: 97,
+    phone: "+62 815-5678-1234",
+    email: "rubby@kdkmp.coop",
+    provinsi: "Jawa Barat",
+    kabupaten: "Bandung",
+    kelurahan: "Ciheulang",
+    activities: [
+      "Audit keuangan semester I",
+      "Pengawasan kepatuhan SOP operasional",
     ],
   },
   {
-    id: "m6",
-    name: "Sri Wahyuni",
-    role: "Kasir Gerai Sukamaju",
-    dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
-    parentId: "m2",
-    code: "SKJ-006",
-    joined: "01 Sep 2022",
+    id: "m7",
+    name: "Kasanudin, S.Pd",
+    role: "Anggota Pengawas",
+    dept: "Pengawas",
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150",
+    parentId: "m6",
+    code: "KDKMP-007",
+    joined: "18 Mar 2020",
     status: "Aktif",
     simpananPokok: "Rp 1.000.000",
     simpananWajib: "Rp 100.000 / bln",
     simpananSukarela: "Rp 2.100.000",
     voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 95,
-    phone: "+62 821-3344-556",
-    email: "sri.wahyuni@sikora.coop",
+    transparencyScore: 91,
+    phone: "+62 877-2345-6781",
+    email: "kasanudin@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Sukamaju",
+    kelurahan: "Ciheulang",
     activities: [
-      "Melayani 45 transaksi POS hari ini",
-      "Penyetoran kas harian gerai pusat",
-    ],
-  },
-  {
-    id: "m7",
-    name: "Bambang Wijaya",
-    role: "Staf Logistik",
-    dept: "Divisi Operasional",
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
-    parentId: "m2",
-    code: "SKJ-007",
-    joined: "15 Des 2022",
-    status: "Aktif",
-    simpananPokok: "Rp 1.000.000",
-    simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 900.000",
-    voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 92,
-    phone: "+62 822-6677-889",
-    email: "bambang.wijaya@sikora.coop",
-    provinsi: "Jawa Barat",
-    kabupaten: "Bandung",
-    kelurahan: "Cibiru",
-    activities: [
-      "Pengiriman logistik minyak goreng ke gerai Cibiru",
-      "Pengecekan armada kendaraan kurir",
+      "Verifikasi laporan transaksi bulanan",
+      "Evaluasi kepatuhan anggota terhadap AD/ART",
     ],
   },
   {
     id: "m8",
-    name: "Rina Kartika",
-    role: "Staf Akuntansi",
-    dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150",
-    parentId: "m3",
-    code: "SKJ-008",
-    joined: "01 Feb 2023",
+    name: "Udan Suhendar",
+    role: "Anggota Pengawas",
+    dept: "Pengawas",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+    parentId: "m6",
+    code: "KDKMP-008",
+    joined: "18 Mar 2020",
     status: "Aktif",
     simpananPokok: "Rp 1.000.000",
     simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 3.100.000",
+    simpananSukarela: "Rp 1.800.000",
     voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 96,
-    phone: "+62 856-1122-334",
-    email: "rina.kartika@sikora.coop",
+    transparencyScore: 90,
+    phone: "+62 851-6789-2345",
+    email: "udan@kdkmp.coop",
     provinsi: "Jawa Barat",
     kabupaten: "Bandung",
-    kelurahan: "Margahayu",
+    kelurahan: "Ciheulang",
     activities: [
-      "Posting jurnal transaksi penjualan sembako",
-      "Penyusunan rekonsiliasi bank BCA",
-    ],
-  },
-  {
-    id: "m9",
-    name: "Hadi Pranoto",
-    role: "Staf Pajak",
-    dept: "Divisi Keuangan",
-    avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150",
-    parentId: "m3",
-    code: "SKJ-009",
-    joined: "12 Apr 2023",
-    status: "Aktif",
-    simpananPokok: "Rp 1.000.000",
-    simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 1.500.000",
-    voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 93,
-    phone: "+62 857-4455-667",
-    email: "hadi.pranoto@sikora.coop",
-    provinsi: "Jawa Barat",
-    kabupaten: "Bandung",
-    kelurahan: "Margahayu",
-    activities: [
-      "Penginputan e-Faktur PPN Masukan koperasi",
-      "Penyetoran PPh 21 bulanan karyawan",
-    ],
-  },
-  {
-    id: "m10",
-    name: "Eko Prasetyo",
-    role: "Penyuluh Grassroot",
-    dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150",
-    parentId: "m4",
-    code: "SKJ-010",
-    joined: "18 Jun 2023",
-    status: "Aktif",
-    simpananPokok: "Rp 1.000.000",
-    simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 2.400.000",
-    voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 97,
-    phone: "+62 878-8899-001",
-    email: "eko.prasetyo@sikora.coop",
-    provinsi: "Jawa Tengah",
-    kabupaten: "Sleman",
-    kelurahan: "Candi",
-    activities: [
-      "Sosialisasi tata kelola koperasi di Desa Sleman",
-      "Registrasi 14 anggota masyarakat baru",
-    ],
-  },
-  {
-    id: "m11",
-    name: "Rian Hidayat",
-    role: "Staf IT Support",
-    dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    parentId: "m4",
-    code: "SKJ-011",
-    joined: "01 Nov 2023",
-    status: "Aktif",
-    simpananPokok: "Rp 1.000.000",
-    simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 1.200.000",
-    voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 94,
-    phone: "+62 899-2233-445",
-    email: "rian.hidayat@sikora.coop",
-    provinsi: "Jawa Barat",
-    kabupaten: "Sumedang",
-    kelurahan: "Jatinangor",
-    activities: [
-      "Setting tablet POS baru di gerai Cibiru",
-      "Monitoring konektivitas VPN data sinkronisasi",
-    ],
-  },
-  {
-    id: "m12",
-    name: "Fitriani",
-    role: "Hubungan Anggota",
-    dept: "Divisi AI & Kemitraan",
-    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=150",
-    parentId: "m4",
-    code: "SKJ-012",
-    joined: "15 Jan 2024",
-    status: "Aktif",
-    simpananPokok: "Rp 1.000.000",
-    simpananWajib: "Rp 100.000 / bln",
-    simpananSukarela: "Rp 1.900.000",
-    voteShare: "1.0% (Hak Setara)",
-    transparencyScore: 96,
-    phone: "+62 896-5566-778",
-    email: "fitriani@sikora.coop",
-    provinsi: "Jawa Tengah",
-    kabupaten: "Sleman",
-    kelurahan: "Candi",
-    activities: [
-      "Menjawab keluhan anggota tentang limit pinjaman",
-      "Penyebaran bulletin triwulan KDKMP digital",
+      "Pemeriksaan aset inventaris koperasi",
+      "Laporan pengawasan triwulanan ke RAT",
     ],
   },
 ]
 
 // Graph topology links
 const LINKS = [
+  // Ketua → semua pengurus
   { source: "m1", target: "m2" },
   { source: "m1", target: "m3" },
   { source: "m1", target: "m4" },
-  { source: "m2", target: "m5" },
-  { source: "m2", target: "m6" },
-  { source: "m2", target: "m7" },
-  { source: "m3", target: "m8" },
-  { source: "m3", target: "m9" },
-  { source: "m4", target: "m10" },
-  { source: "m4", target: "m11" },
-  { source: "m4", target: "m12" },
+  { source: "m1", target: "m5" },
+  // Ketua ↔ Ketua Pengawas (koordinasi / oversight)
+  { source: "m1", target: "m6" },
+  // Ketua Pengawas → anggota pengawas
+  { source: "m6", target: "m7" },
+  { source: "m6", target: "m8" },
 ]
 
 // Dept colour palette used for node rings and SVG lines
 const DEPT_COLOR: Record<string, string> = {
-  "Pengurus Harian": "#3b82f6",
-  "Divisi Operasional": "#10b981",
-  "Divisi Keuangan": "#f59e0b",
-  "Divisi AI & Kemitraan": "#8b5cf6",
+  "Pengurus": "#3b82f6",
+  "Pengawas": "#8b5cf6",
 }
 
 interface NodePhysics {
@@ -384,25 +279,33 @@ const GW = 600
 const GH = 420
 
 function makeInitialNodes(): Record<string, NodePhysics> {
-  // Spread nodes in a circle so the physics settles cleanly from the start
   const cx = GW / 2
   const cy = GH / 2
   const ids = MEMBERS.map((m) => m.id)
   const radii: Record<string, number> = {
-    m1: 34, m2: 24, m3: 24, m4: 24,
-    m5: 17, m6: 17, m7: 17, m8: 17, m9: 17, m10: 17, m11: 17, m12: 17,
+    m1: 34, m2: 20, m3: 20, m4: 20, m5: 20, m6: 28, m7: 17, m8: 17,
+  }
+  const angles: Record<string, number> = {
+    m1: Math.PI,
+    m2: Math.PI * 1.6,
+    m3: Math.PI * 1.2,
+    m4: Math.PI * 0.75,
+    m5: Math.PI * 0.35,
+    m6: 0,
+    m7: Math.PI * -0.28,
+    m8: Math.PI * 0.28,
   }
   const nodes: Record<string, NodePhysics> = {}
-  ids.forEach((id, i) => {
-    const angle = (i / ids.length) * 2 * Math.PI
-    const spread = id === "m1" ? 0 : (id.length === 2 ? 130 : 230)
+  ids.forEach((id) => {
+    const angle  = angles[id] ?? 0
+    const spread = id === "m1" ? 115 : id === "m6" ? 220 : (["m2","m3","m4","m5"].includes(id) ? 165 : 295)
     nodes[id] = {
       id,
       x: cx + spread * Math.cos(angle),
       y: cy + spread * Math.sin(angle),
       vx: 0,
       vy: 0,
-      r: radii[id] ?? 17,
+      r: radii[id] ?? 18,
     }
   })
   return nodes
@@ -434,6 +337,8 @@ function ForceGraph({
   const viewGroupRef  = useRef<SVGGElement | null>(null)
   const nodesRef      = useRef<Record<string, NodePhysics>>(makeInitialNodes())
   const pathRefs      = useRef<Record<string, SVGPathElement | null>>({})
+  const basePathRefs  = useRef<Record<string, SVGPathElement | null>>({})
+  const gradRefs      = useRef<Record<string, SVGLinearGradientElement | null>>({})
   const nodeGroupRefs = useRef<Record<string, SVGGElement | null>>({})
   const hullRefs      = useRef<Record<string, SVGEllipseElement | null>>({})
 
@@ -567,11 +472,25 @@ function ForceGraph({
 
       // 6. DOM mutations — zero React state
       for (const { source, target } of links) {
-        const el = pathRefs.current[`${source}-${target}`]
+        const key = `${source}-${target}`
+        const el = pathRefs.current[key]
+        const baseEl = basePathRefs.current[key]
         if (!el) continue
         const a = ns[source], b = ns[target]
-        el.setAttribute("d", bezierD(a.x, a.y, b.x, b.y))
+        const d = bezierD(a.x, a.y, b.x, b.y)
+        
+        el.setAttribute("d", d)
+        if (baseEl) baseEl.setAttribute("d", d)
         el.setAttribute("stroke-dashoffset", String(dashRef.current))
+
+        // Sync linearGradient vectors with node positions
+        const gradEl = gradRefs.current[key]
+        if (gradEl) {
+          gradEl.setAttribute("x1", String(a.x))
+          gradEl.setAttribute("y1", String(a.y))
+          gradEl.setAttribute("x2", String(b.x))
+          gradEl.setAttribute("y2", String(b.y))
+        }
       }
       for (const k of keys) {
         const g = nodeGroupRefs.current[k]
@@ -710,6 +629,7 @@ function ForceGraph({
             const initB = nodesRef.current[target]
             return (
               <linearGradient key={gid} id={gid} gradientUnits="userSpaceOnUse"
+                ref={(el) => { gradRefs.current[`${source}-${target}`] = el }}
                 x1={initA?.x ?? GW/2} y1={initA?.y ?? GH/2}
                 x2={initB?.x ?? GW/2} y2={initB?.y ?? GH/2}
               >
@@ -728,30 +648,28 @@ function ForceGraph({
             opacity="0.5" strokeDasharray="5 7"/>
         ))}
 
-        {/* ── Department hull blobs (juggl / obsidian-extended-graph) ── */}
-        <g>
+        {/* ── Main content group (zoom/pan via viewRef) — hulls are INSIDE so zoom/pan applies ── */}
+        <g ref={viewGroupRef}>
+          {/* ── Department hull blobs ── */}
           {depts.map((dept) => {
             const color  = DEPT_COLOR[dept] ?? "#94a3b8"
             const init   = nodesRef.current
             const mNodes = members.filter((m) => m.dept === dept).map((m) => init[m.id]).filter(Boolean)
             if (mNodes.length === 0) return null
-            const cx = mNodes.reduce((s, n) => s + n!.x, 0) / mNodes.length
-            const cy = mNodes.reduce((s, n) => s + n!.y, 0) / mNodes.length
+            const hcx = mNodes.reduce((s, n) => s + n!.x, 0) / mNodes.length
+            const hcy = mNodes.reduce((s, n) => s + n!.y, 0) / mNodes.length
             return (
               <ellipse
                 key={dept}
                 ref={(el) => { hullRefs.current[dept] = el }}
-                cx={cx} cy={cy} rx={60} ry={50}
+                cx={hcx} cy={hcy} rx={65} ry={55}
                 fill={color}
-                opacity={0.06}
+                opacity={0.07}
                 filter="url(#hull-blur)"
               />
             )
           })}
-        </g>
 
-        {/* ── Main content group (zoom/pan via viewRef) ── */}
-        <g ref={viewGroupRef}>
           {/* ── Bezier edges with animated flow (obsidian-living-graph) ── */}
           {links.map(({ source, target }) => {
             const sm = memberMap[source]
@@ -767,6 +685,7 @@ function ForceGraph({
               <g key={key}>
                 {/* Solid base path */}
                 <path
+                  ref={(el) => { basePathRefs.current[key] = el }}
                   d={initD}
                   fill="none"
                   stroke={`url(#eg-${key})`}
@@ -1081,97 +1000,122 @@ export function Keanggotaan() {
 
           {viewMode === "hierarchy" ? (
             /* --- HIERARCHY / ORG CHART VIEW --- */
-            <div className="flex-1 py-8 flex flex-col items-center min-w-[700px] overflow-visible select-none">
-              {/* LEVEL 1: Chairman */}
-              <div className="flex flex-col items-center">
-                <div
-                  onClick={() => setSelectedId("m1")}
-                  className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-52 hover:scale-[1.03] hover:shadow-md ${
-                    selectedId === "m1" ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
-                  } ${isMemberMatchingFilters(MEMBERS[0]) ? "opacity-100" : "opacity-25"}`}
-                >
-                  <span className="absolute -top-2.5 bg-blue-100 text-blue-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-blue-200">
-                    Leader
-                  </span>
-                  <img
-                    src={MEMBERS[0].avatar}
-                    className="size-11 rounded-full object-cover border-2 border-white ring-2 ring-slate-100"
-                    alt={MEMBERS[0].name}
-                  />
-                  <h4 className="mt-2 text-xs font-bold text-slate-800 text-center">{MEMBERS[0].name}</h4>
-                  <p className="text-[10px] font-medium text-slate-400 mt-0.5">{MEMBERS[0].role}</p>
-                  <div className="mt-2 w-full border-t border-slate-50 pt-1.5 flex justify-between items-center text-[9px] font-semibold text-slate-400">
-                    <span className="flex items-center gap-0.5"><ShieldCheck className="size-3 text-emerald-500" /> {MEMBERS[0].transparencyScore}%</span>
-                    <span>{MEMBERS[0].code}</span>
-                  </div>
+            <div className="flex-1 py-6 px-4 flex flex-col gap-8 overflow-auto select-none">
+
+              {/* ═══ STRUKTUR PENGURUS ═══════════════════════════════════════ */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="size-2.5 rounded-full bg-blue-500" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">Struktur Pengurus</span>
                 </div>
 
-                {/* Level 1 down line */}
-                <div className="w-0.5 h-6 bg-slate-200" />
-              </div>
+                <div className="flex flex-col items-center">
+                  <div
+                    onClick={() => setSelectedId("m1")}
+                    className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-52 hover:scale-[1.03] hover:shadow-md ${
+                      selectedId === "m1" ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
+                    } ${isMemberMatchingFilters(MEMBERS[0]) ? "opacity-100" : "opacity-25"}`}
+                  >
+                    <span className="absolute -top-2.5 bg-blue-100 text-blue-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-blue-200">
+                      Ketua
+                    </span>
+                    <img src={MEMBERS[0].avatar} className="size-12 rounded-full object-cover border-2 border-white ring-2 ring-blue-100" alt={MEMBERS[0].name} />
+                    <h4 className="mt-2 text-xs font-bold text-slate-800 text-center">{MEMBERS[0].name}</h4>
+                    <p className="text-[10px] font-medium text-slate-400 mt-0.5">{MEMBERS[0].role}</p>
+                    <div className="mt-2 w-full border-t border-slate-50 pt-1.5 flex justify-between items-center text-[9px] font-semibold text-slate-400">
+                      <span className="flex items-center gap-0.5"><ShieldCheck className="size-3 text-emerald-500" /> {MEMBERS[0].transparencyScore}%</span>
+                      <span>{MEMBERS[0].code}</span>
+                    </div>
+                  </div>
 
-              {/* LEVEL 2: Managers */}
-              <div className="relative w-full flex flex-col items-center">
-                {/* Horizontal branch line */}
-                <div className="absolute top-0 left-1/6 right-1/6 h-0.5 bg-slate-200" style={{ left: "17%", right: "17%" }} />
+                  <div className="w-0.5 h-5 bg-slate-200" />
 
-                <div className="w-full grid grid-cols-3 gap-4 pt-0.5">
-                  {[MEMBERS[1], MEMBERS[2], MEMBERS[3]].map((m) => (
-                    <div key={m.id} className="flex flex-col items-center">
-                      {/* Vertical line to each card */}
-                      <div className="w-0.5 h-6 bg-slate-200" />
-
-                      <div
-                        onClick={() => setSelectedId(m.id)}
-                        className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-48 hover:scale-[1.03] hover:shadow-md ${
-                          selectedId === m.id ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
-                        } ${isMemberMatchingFilters(m) ? "opacity-100" : "opacity-25"}`}
-                      >
-                        <span className="absolute -top-2.5 bg-violet-100 text-violet-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-violet-200">
-                          Manager
-                        </span>
-                        <img
-                          src={m.avatar}
-                          className="size-10 rounded-full object-cover border-2 border-white ring-2 ring-slate-100"
-                          alt={m.name}
-                        />
-                        <h4 className="mt-2 text-xs font-bold text-slate-800 text-center">{m.name}</h4>
-                        <p className="text-[9.5px] font-medium text-slate-400 mt-0.5">{m.role}</p>
-                        <div className="mt-2 w-full border-t border-slate-50 pt-1.5 flex justify-between items-center text-[9px] font-semibold text-slate-400">
-                          <span className="flex items-center gap-0.5"><ShieldCheck className="size-3 text-emerald-500" /> {m.transparencyScore}%</span>
-                          <span>{m.code}</span>
-                        </div>
-                      </div>
-
-                      {/* Line down to Subordinates */}
-                      <div className="w-0.5 h-6 bg-slate-200" />
-
-                      {/* LEVEL 3: Vertical Stack of Subordinates */}
-                      <div className="flex flex-col gap-2 w-48 pl-3.5 relative before:absolute before:left-0 before:top-0 before:bottom-7 before:w-0.5 before:bg-slate-200">
-                        {MEMBERS.filter((sub) => sub.parentId === m.id).map((sub) => (
+                  <div className="relative w-full flex flex-col items-center">
+                    <div className="absolute top-0 h-0.5 bg-slate-200" style={{ left: "10%", right: "10%" }} />
+                    <div className="w-full grid grid-cols-4 gap-3 pt-0.5">
+                      {[MEMBERS[1], MEMBERS[2], MEMBERS[3], MEMBERS[4]].map((m) => (
+                        <div key={m.id} className="flex flex-col items-center">
+                          <div className="w-0.5 h-5 bg-slate-200" />
                           <div
-                            key={sub.id}
-                            onClick={() => setSelectedId(sub.id)}
-                            className={`relative flex items-center gap-2 p-2 rounded-xl border bg-white cursor-pointer transition-all duration-355 hover:scale-[1.02] hover:shadow-sm ${
-                              selectedId === sub.id ? "border-blue-600 ring-1.5 ring-blue-500/20" : "border-slate-100"
-                            } ${isMemberMatchingFilters(sub) ? "opacity-100" : "opacity-25"} before:absolute before:-left-3.5 before:top-1/2 before:-translate-y-1/2 before:w-3.5 before:h-0.5 before:bg-slate-200`}
+                            onClick={() => setSelectedId(m.id)}
+                            className={`relative flex flex-col items-center p-2.5 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-full hover:scale-[1.03] hover:shadow-md ${
+                              selectedId === m.id ? "border-blue-600 ring-2 ring-blue-500/20" : "border-slate-100"
+                            } ${isMemberMatchingFilters(m) ? "opacity-100" : "opacity-25"}`}
                           >
-                            <img
-                              src={sub.avatar}
-                              className="size-7 rounded-full object-cover border border-slate-100"
-                              alt={sub.name}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <h5 className="text-[10.5px] font-bold text-slate-800 truncate leading-tight">{sub.name}</h5>
-                              <p className="text-[9px] font-medium text-slate-400 truncate leading-tight mt-0.5">{sub.role}</p>
+                            <span className="absolute -top-2 bg-slate-100 text-slate-500 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full border border-slate-200">
+                              Pengurus
+                            </span>
+                            <img src={m.avatar} className="size-9 rounded-full object-cover border-2 border-white ring-1 ring-slate-100" alt={m.name} />
+                            <h4 className="mt-1.5 text-[10px] font-bold text-slate-800 text-center leading-tight">{m.name}</h4>
+                            <p className="text-[9px] font-medium text-slate-400 mt-0.5 text-center leading-tight">{m.role}</p>
+                            <div className="mt-1.5 w-full border-t border-slate-50 pt-1 flex justify-between text-[8.5px] font-semibold text-slate-400">
+                              <span className="flex items-center gap-0.5"><ShieldCheck className="size-2.5 text-emerald-500" /> {m.transparencyScore}%</span>
+                              <span className="truncate ml-1">{m.code}</span>
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
+
+              {/* ═══ STRUKTUR PENGAWAS ══════════════════════════════════════ */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="size-2.5 rounded-full bg-violet-500" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-violet-600">Struktur Pengawas</span>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <div
+                    onClick={() => setSelectedId("m6")}
+                    className={`relative flex flex-col items-center justify-center p-3 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-52 hover:scale-[1.03] hover:shadow-md ${
+                      selectedId === "m6" ? "border-violet-600 ring-2 ring-violet-500/20" : "border-slate-100"
+                    } ${isMemberMatchingFilters(MEMBERS[5]) ? "opacity-100" : "opacity-25"}`}
+                  >
+                    <span className="absolute -top-2.5 bg-violet-100 text-violet-700 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-violet-200">
+                      Ketua Pengawas
+                    </span>
+                    <img src={MEMBERS[5].avatar} className="size-12 rounded-full object-cover border-2 border-white ring-2 ring-violet-100" alt={MEMBERS[5].name} />
+                    <h4 className="mt-2 text-xs font-bold text-slate-800 text-center">{MEMBERS[5].name}</h4>
+                    <p className="text-[10px] font-medium text-slate-400 mt-0.5">{MEMBERS[5].role}</p>
+                    <div className="mt-2 w-full border-t border-slate-50 pt-1.5 flex justify-between items-center text-[9px] font-semibold text-slate-400">
+                      <span className="flex items-center gap-0.5"><ShieldCheck className="size-3 text-emerald-500" /> {MEMBERS[5].transparencyScore}%</span>
+                      <span>{MEMBERS[5].code}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-0.5 h-5 bg-slate-200" />
+
+                  <div className="relative flex gap-16">
+                    <div className="absolute top-0 h-0.5 bg-slate-200" style={{ left: "25%", right: "25%" }} />
+                    {[MEMBERS[6], MEMBERS[7]].map((m) => (
+                      <div key={m.id} className="flex flex-col items-center">
+                        <div className="w-0.5 h-5 bg-slate-200" />
+                        <div
+                          onClick={() => setSelectedId(m.id)}
+                          className={`relative flex flex-col items-center p-2.5 rounded-2xl border bg-white shadow-sm cursor-pointer transition-all duration-300 w-44 hover:scale-[1.03] hover:shadow-md ${
+                            selectedId === m.id ? "border-violet-600 ring-2 ring-violet-500/20" : "border-slate-100"
+                          } ${isMemberMatchingFilters(m) ? "opacity-100" : "opacity-25"}`}
+                        >
+                          <span className="absolute -top-2 bg-violet-50 text-violet-500 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full border border-violet-200">
+                            Anggota
+                          </span>
+                          <img src={m.avatar} className="size-9 rounded-full object-cover border-2 border-white ring-1 ring-violet-100" alt={m.name} />
+                          <h4 className="mt-1.5 text-[10px] font-bold text-slate-800 text-center leading-tight">{m.name}</h4>
+                          <p className="text-[9px] font-medium text-slate-400 mt-0.5 text-center leading-tight">{m.role}</p>
+                          <div className="mt-1.5 w-full border-t border-slate-50 pt-1 flex justify-between text-[8.5px] font-semibold text-slate-400">
+                            <span className="flex items-center gap-0.5"><ShieldCheck className="size-2.5 text-emerald-500" /> {m.transparencyScore}%</span>
+                            <span className="truncate ml-1">{m.code}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
             </div>
           ) : (
             /* --- SMOOTH PHYSICS-BASED SVG NODE GRAPH --- */
