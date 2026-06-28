@@ -1022,7 +1022,7 @@ export function LandingPage() {
             {/* Column 1: Brand & Desc (4 cols) */}
             <div className="md:col-span-4 space-y-3">
               <div className="flex items-center">
-                <img src={logoInvert} alt="SIKORA" className="h-24 object-contain -my-4 -ml-4" />
+                <img src={logoInvert} alt="SIKORA" className="h-36 object-contain -my-6 -ml-6" />
               </div>
               <p className="text-slate-400 text-xs leading-relaxed max-w-xs mt-1">
                 Sinergi Koperasi Raya (SIKORA) merevolusi pengelolaan koperasi desa (KDKMP). Keputusan operasional lebih cerdas, aman, dan terintegrasi secara nasional.
