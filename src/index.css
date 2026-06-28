@@ -103,6 +103,9 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   * {
     border-color: var(--border);
   }

@@ -218,7 +218,11 @@ export function LandingPage() {
 
             <a 
               href="#cara-kerja" 
-              className="inline-flex items-center justify-center whitespace-nowrap border border-slate-350 hover:bg-slate-50 bg-white text-slate-655 rounded-full px-6 h-11 text-xs sm:text-sm font-bold tracking-wide transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("cara-kerja")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="inline-flex items-center justify-center whitespace-nowrap border border-slate-350 hover:bg-slate-50 bg-white text-slate-655 rounded-full px-6 h-11 text-xs sm:text-sm font-bold tracking-wide transition-colors cursor-pointer"
             >
               Pelajari Alur Kerja
             </a>
