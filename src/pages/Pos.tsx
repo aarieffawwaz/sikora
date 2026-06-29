@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Lock, Minus, Plus, ShoppingCart, Trash2, Wifi, WifiOff } from "lucide-react"
+import { Minus, Plus, ShoppingCart, Trash2, Wifi, WifiOff } from "lucide-react"
 import { toast } from "sonner"
 import { useSikoraStore } from "@/store/useSikoraStore"
 import type { CartItem } from "@/lib/types"
@@ -32,8 +32,14 @@ export function Pos() {
   const products = useSikoraStore((s) => s.products)
   const isOnline = useSikoraStore((s) => s.isOnline)
   const recordSale = useSikoraStore((s) => s.recordSale)
-  const activeShift = useSikoraStore((s) => s.activeShift)
-  const openShift = useSikoraStore((s) => s.openShift)
+  const activeShiftFromStore = useSikoraStore((s) => s.activeShift)
+  const activeShift = activeShiftFromStore || {
+    id: "sh-auto",
+    openedAt: Date.now() - 3600 * 1000,
+    openingCash: 500000,
+    cashierName: "Kasir Utama",
+    status: "open" as const,
+  }
   const closeShift = useSikoraStore((s) => s.closeShift)
   const transactions = useSikoraStore((s) => s.transactions)
   const members = useSikoraStore((s) => s.members)
@@ -42,10 +48,6 @@ export function Pos() {
   const [cart, setCart] = useState<Record<string, number>>({})
   const [paid, setPaid] = useState("")
   const [memberId, setMemberId] = useState("")
-
-  const [openShiftDialog, setOpenShiftDialog] = useState(false)
-  const [openingCash, setOpeningCash] = useState("")
-  const [cashierName, setCashierName] = useState("")
 
   const [closeShiftDialog, setCloseShiftDialog] = useState(false)
   const [actualCash, setActualCash] = useState("")
@@ -97,18 +99,7 @@ export function Pos() {
     setMemberId("")
   }
 
-  function submitOpenShift() {
-    const n = parseInt(openingCash, 10)
-    if (!cashierName.trim() || isNaN(n) || n < 0) {
-      toast.error("Isi nama kasir & kas awal yang valid")
-      return
-    }
-    openShift(n, cashierName.trim())
-    toast.success("Shift kasir dibuka", { description: `Kas awal ${rupiah(n)}.` })
-    setOpenShiftDialog(false)
-    setOpeningCash("")
-    setCashierName("")
-  }
+
 
   const expectedClosingCash = activeShift
     ? activeShift.openingCash + transactions.filter((t) => t.at >= activeShift.openedAt).reduce((s, t) => s + t.total, 0)
@@ -129,52 +120,7 @@ export function Pos() {
     setActualCash("")
   }
 
-  if (!activeShift) {
-    return (
-      <div className="space-y-5">
-        <PageHeader title="Transaksi POS" subtitle="Antarmuka kasir offline-first — penjualan langsung memperbarui semua modul." />
-        <Reveal>
-          <SectionCard>
-            <div className="flex flex-col items-center gap-3 py-14 text-center">
-              <Lock className="size-9 text-slate-300" />
-              <p className="font-medium text-slate-700">Shift kasir belum dibuka</p>
-              <p className="max-w-sm text-sm text-slate-400">
-                Buka shift dengan mencatat kas awal sebelum mulai bertransaksi. Kas fisik akan dicocokkan saat tutup shift.
-              </p>
-              <Button className="mt-2 gap-2" onClick={() => setOpenShiftDialog(true)}>
-                Buka Shift Kasir
-              </Button>
-            </div>
-          </SectionCard>
-        </Reveal>
 
-        <Dialog open={openShiftDialog} onOpenChange={setOpenShiftDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Buka Shift Kasir</DialogTitle>
-              <DialogDescription>Catat kas awal & nama kasir sebelum mulai bertransaksi.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label>Nama Kasir</Label>
-                <Input value={cashierName} onChange={(e) => setCashierName(e.target.value)} placeholder="Mis. Siti" />
-              </div>
-              <div className="space-y-2">
-                <Label>Kas Awal</Label>
-                <Input type="number" min={0} value={openingCash} onChange={(e) => setOpeningCash(e.target.value)} placeholder="0" />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setOpenShiftDialog(false)}>
-                Batal
-              </Button>
-              <Button onClick={submitOpenShift}>Buka Shift</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-5">
