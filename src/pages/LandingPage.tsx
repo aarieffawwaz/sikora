@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
 import {
   ArrowRight,
   Check,
@@ -22,56 +23,28 @@ import testiMedan from "@/assets/testimonial_medan.jpg"
 import { OperationsMap } from "@/components/shared/OperationsMap"
 import { CountUp } from "@/components/shared/CountUp"
 
-// useReveal hook using IntersectionObserver
-function useReveal() {
-  const ref = React.useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.2 }
-    )
-
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
-  return { ref, isVisible }
-}
-
-// Reusable Scroll Reveal Wrapper (Saudara-style)
+// Reusable Scroll Reveal Wrapper
 function Reveal({ 
   children, 
   direction = "up", 
-  delay = 0,
-  className = ""
+  delay = 0 
 }: { 
   children: React.ReactNode
   direction?: "up" | "left" | "right"
-  delay?: number
-  className?: string
+  delay?: number 
 }) {
-  const { ref, isVisible } = useReveal()
-  const initClass = `fade-${direction}-init`
-  const inClass = `fade-${direction}-in`
+  const xOffset = direction === "left" ? -40 : direction === "right" ? 40 : 0
+  const yOffset = direction === "up" ? 40 : 0
 
   return (
-    <div
-      ref={ref}
-      className={`${className} ${isVisible ? inClass : initClass}`}
-      style={{ animationDelay: `${delay}s` }}
+    <motion.div
+      initial={{ opacity: 0, x: xOffset, y: yOffset }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay }}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }
 
@@ -152,6 +125,66 @@ export function LandingPage() {
     window.addEventListener("scroll", handleScroll)
     handleScroll() // Trigger on mount to check initial scroll
     return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  // Momentum smooth scrolling ("ice skating" feel)
+  useEffect(() => {
+    if (window.innerWidth < 768) return
+
+    let targetY = window.scrollY
+    let currentY = window.scrollY
+    const ease = 0.085 // Deceleration factor (smaller = more glide/ice skating)
+    let isMoving = false
+    let rId: number | null = null
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      targetY += e.deltaY
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+      targetY = Math.max(0, Math.min(targetY, maxScroll))
+
+      if (!isMoving) {
+        isMoving = true
+        startScrollLoop()
+      }
+    }
+
+    const startScrollLoop = () => {
+      if (rId !== null) return
+      
+      const updateScroll = () => {
+        currentY += (targetY - currentY) * ease
+        window.scrollTo(0, currentY)
+
+        if (Math.abs(targetY - currentY) < 0.25) {
+          window.scrollTo(0, targetY)
+          currentY = targetY
+          isMoving = false
+          rId = null
+        } else {
+          rId = requestAnimationFrame(updateScroll)
+        }
+      }
+      
+      rId = requestAnimationFrame(updateScroll)
+    }
+
+    window.addEventListener("wheel", handleWheel, { passive: false })
+
+    const handleScroll = () => {
+      if (!isMoving) {
+        targetY = window.scrollY
+        currentY = window.scrollY
+      }
+    }
+    window.addEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel)
+      window.removeEventListener("scroll", handleScroll)
+      if (rId !== null) cancelAnimationFrame(rId)
+    }
   }, [])
 
   const toggleFaq = (index: number) => {
