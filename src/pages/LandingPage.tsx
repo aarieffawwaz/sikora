@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { ReactLenis } from "lenis/react"
 import { motion } from "framer-motion"
 import {
   ArrowRight,
@@ -127,65 +128,7 @@ export function LandingPage() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Momentum smooth scrolling ("ice skating" feel)
-  useEffect(() => {
-    if (window.innerWidth < 768) return
 
-    let targetY = window.scrollY
-    let currentY = window.scrollY
-    const ease = 0.085 // Deceleration factor (smaller = more glide/ice skating)
-    let isMoving = false
-    let rId: number | null = null
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-      
-      targetY += e.deltaY
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-      targetY = Math.max(0, Math.min(targetY, maxScroll))
-
-      if (!isMoving) {
-        isMoving = true
-        startScrollLoop()
-      }
-    }
-
-    const startScrollLoop = () => {
-      if (rId !== null) return
-      
-      const updateScroll = () => {
-        currentY += (targetY - currentY) * ease
-        window.scrollTo(0, currentY)
-
-        if (Math.abs(targetY - currentY) < 0.25) {
-          window.scrollTo(0, targetY)
-          currentY = targetY
-          isMoving = false
-          rId = null
-        } else {
-          rId = requestAnimationFrame(updateScroll)
-        }
-      }
-      
-      rId = requestAnimationFrame(updateScroll)
-    }
-
-    window.addEventListener("wheel", handleWheel, { passive: false })
-
-    const handleScroll = () => {
-      if (!isMoving) {
-        targetY = window.scrollY
-        currentY = window.scrollY
-      }
-    }
-    window.addEventListener("scroll", handleScroll)
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel)
-      window.removeEventListener("scroll", handleScroll)
-      if (rId !== null) cancelAnimationFrame(rId)
-    }
-  }, [])
 
   const toggleFaq = (index: number) => {
     setFaqOpen((prev) =>
@@ -208,10 +151,11 @@ export function LandingPage() {
   ]
 
   return (
-    <div 
-      className="min-h-screen bg-slate-50/40 overflow-x-hidden font-sans antialiased relative"
-      style={{ color: "oklch(0.21 0.03 256)" }}
-    >
+    <ReactLenis root>
+      <div 
+        className="min-h-screen bg-slate-50/40 overflow-x-hidden font-sans antialiased relative"
+        style={{ color: "oklch(0.21 0.03 256)" }}
+      >
       
       {/* Decorative Blur Gradients */}
       <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[80%] max-w-6xl h-[600px] bg-gradient-to-br from-blue-100/30 via-indigo-50/10 to-transparent rounded-full blur-[120px] pointer-events-none -z-10"></div>
@@ -1229,7 +1173,8 @@ export function LandingPage() {
         </div>
       </footer>
 
-    </div>
+      </div>
+    </ReactLenis>
   )
 }
 
