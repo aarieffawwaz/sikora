@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
 import {
   ArrowRight,
   Check,
@@ -23,29 +22,92 @@ import testiMedan from "@/assets/testimonial_medan.jpg"
 import { OperationsMap } from "@/components/shared/OperationsMap"
 import { CountUp } from "@/components/shared/CountUp"
 
-// Reusable Scroll Reveal Wrapper
+// useReveal hook using IntersectionObserver
+function useReveal() {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.2 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, isVisible }
+}
+
+// Reusable Scroll Reveal Wrapper (Saudara-style)
 function Reveal({ 
   children, 
   direction = "up", 
-  delay = 0 
+  delay = 0,
+  className = ""
 }: { 
   children: React.ReactNode
   direction?: "up" | "left" | "right"
-  delay?: number 
+  delay?: number
+  className?: string
 }) {
-  const xOffset = direction === "left" ? -40 : direction === "right" ? 40 : 0
-  const yOffset = direction === "up" ? 40 : 0
+  const { ref, isVisible } = useReveal()
+  const initClass = `fade-${direction}-init`
+  const inClass = `fade-${direction}-in`
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: xOffset, y: yOffset }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay }}
+    <div
+      ref={ref}
+      className={`${className} ${isVisible ? inClass : initClass}`}
+      style={{ animationDelay: `${delay}s` }}
     >
       {children}
-    </motion.div>
+    </div>
   )
+}
+
+// useParallax hook for throttled style mutation parallax
+function useParallax(speed: number) {
+  const ref = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    let rId: number | null = null
+
+    const handleScroll = () => {
+      if (rId !== null) return
+      rId = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect()
+        const elCenter = rect.top + rect.height / 2
+        const vpCenter = window.innerHeight / 2
+        const offset = elCenter - vpCenter
+        const yVal = offset * speed
+        el.style.transform = `translateY(${yVal}px)`
+        rId = null
+      })
+    }
+
+    window.addEventListener("scroll", handleScroll)
+    handleScroll() // Trigger on mount
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (rId !== null) cancelAnimationFrame(rId)
+    }
+  }, [speed])
+
+  return ref
 }
 
 // Reusable Badge Component (Saudara-style)
@@ -62,6 +124,8 @@ function SaudaraBadge({ text }: { text: string }) {
 }
 
 export function LandingPage() {
+  const heroGlowRef = useParallax(-0.15)
+  const heroMockupRef = useParallax(-0.06)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState<number[]>([])
   const [scrollProgress, setScrollProgress] = useState(0)
@@ -177,6 +241,12 @@ export function LandingPage() {
 
       {/* --- 2. HERO SECTION (ARMOR STYLE: FULLY CENTERED WITH FLOATING MAP BELOW) --- */}
       <section className="relative px-4 pt-28 md:pt-36 pb-12 overflow-hidden">
+        {/* Hero Glow with parallax ref */}
+        <div 
+          ref={heroGlowRef} 
+          className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none -z-10"
+        />
+
         {/* Background Video Underlay */}
         <video 
           autoPlay 
@@ -228,7 +298,7 @@ export function LandingPage() {
           </div>
 
           {/* Large Center Floating Map (Cockpit/Armor View style) */}
-          <div className="w-full max-w-4xl mt-14 animate-float">
+          <div ref={heroMockupRef} className="w-full max-w-4xl mt-14 relative z-20">
             <Reveal>
               <div className="glossy-glass rounded-3xl p-4 sm:p-5 border border-white/40 shadow-2xl relative bg-white/40 backdrop-blur-md">
                 <div className="flex items-center justify-between mb-3 border-b border-slate-200/60 pb-2.5">
